@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PikaThrift</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f8ff;
+      color: #1a2e3b;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0077b6, #00b4d8, #48cae4);
+      color: white;
+      text-align: center;
+      padding: 80px 20px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #f0f8ff;
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 14px;
+      opacity: 0.92;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero .badge {
+      display: inline-block;
+      margin-top: 22px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.6);
+      border-radius: 30px;
+      padding: 6px 20px;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    /* SECTIONS */
+    section {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 50px 24px;
+    }
+    section h2 {
+      font-size: 1.8rem;
+      color: #0077b6;
+      margin-bottom: 20px;
+      border-left: 5px solid #00b4d8;
+      padding-left: 14px;
+    }
+
+    /* MISSION */
+    .mission-box {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 4px 18px rgba(0,119,182,0.1);
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+    .mission-box strong { color: #0077b6; }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .step {
+      flex: 1;
+      min-width: 200px;
+      background: white;
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
+      border-top: 4px solid #00b4d8;
+    }
+    .step .icon { font-size: 2.4rem; margin-bottom: 12px; }
+    .step h3 { color: #0077b6; margin-bottom: 8px; font-size: 1rem; }
+    .step p { font-size: 0.9rem; line-height: 1.6; color: #4a6274; }
+
+    /* NUMBERS */
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+    }
+    .number-card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px 16px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
+    }
+    .number-card .num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0077b6;
+    }
+    .number-card .label {
+      font-size: 0.85rem;
+      color: #4a6274;
+      margin-top: 6px;
+    }
+
+    /* COSTS TABLE */
+    .costs-wrap {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .cost-box {
+      flex: 1;
+      min-width: 240px;
+      background: white;
+      border-radius: 14px;
+      padding: 24px 22px;
+      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
+    }
+    .cost-box h3 {
+      color: #0077b6;
+      font-size: 1rem;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0f0fa;
+    }
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      padding: 5px 0;
+      color: #4a6274;
+      border-bottom: 1px solid #f0f7fc;
+    }
+    .cost-row.total {
+      font-weight: 700;
+      color: #0077b6;
+      border-bottom: none;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    /* GET INVOLVED */
+    .cta-box {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white;
+      border-radius: 16px;
+      padding: 36px 32px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,119,182,0.25);
+    }
+    .cta-box h2 {
+      color: white;
+      border-left: none;
+      padding-left: 0;
+      margin-bottom: 12px;
+    }
+    .cta-box p { opacity: 0.92; font-size: 1rem; line-height: 1.7; }
+    .cta-email {
+      display: inline-block;
+      margin-top: 20px;
+      background: white;
+      color: #0077b6;
+      font-weight: 700;
+      padding: 10px 26px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 28px;
+      font-size: 0.82rem;
+      color: #789aaa;
+      background: #e8f4fb;
+      margin-top: 20px;
+    }
+
+    /* DIVIDER */
+    .wave-divider {
+      width: 100%;
+      line-height: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>PikaThrift</h1>
+    <p>Cleaning oceans. Clothing communities. One pound at a time.</p>
+    <span class="badge">&#127754; Non-Profit Beach Cleanup Thrift</span>
+  </div>
+
+  <!-- MISSION -->
+  <section>
+    <h2>Our Mission</h2>
+    <div class="mission-box">
+      PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches before it reaches the ocean,
+      <strong>washes and sorts</strong> every item, then sells clean clothing <strong>cheaply to thrift shops</strong> so low-income
+      families can afford quality clothes. Every dollar we earn goes right back into more cleanups.
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="icon">&#127754;</div>
+        <h3>Step 1 — Collect</h3>
+        <p>Volunteers use nets and bags to gather textile waste from beaches and coastal areas.</p>
+      </div>
+      <div class="step">
+        <div class="icon">&#129380;</div>
+        <h3>Step 2 — Clean</h3>
+        <p>Every item is washed, dried, and sorted by quality and size at the laundromat.</p>
+      </div>
+      <div class="step">
+        <div class="icon">&#128717;</div>
+        <h3>Step 3 — Sell</h3>
+        <p>Clean, sorted clothing is sold affordably to local thrift shops for resale.</p>
+      </div>
+      <div class="step">
+        <div class="icon">&#9851;</div>
+        <h3>Step 4 — Repeat</h3>
+        <p>Every dollar earned is reinvested into more nets, more cleanups, and more impact.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BY THE NUMBERS -->
+  <section>
+    <h2>By the Numbers</h2>
+    <div class="numbers-grid">
+      <div class="number-card">
+        <div class="num">440 lb</div>
+        <div class="label">Clothes collected per month</div>
+      </div>
+      <div class="number-card">
+        <div class="num">5</div>
+        <div class="label">Dedicated volunteers</div>
+      </div>
+      <div class="number-card">
+        <div class="num">$810</div>
+        <div class="label">Monthly revenue</div>
+      </div>
+      <div class="number-card">
+        <div class="num">$200</div>
+        <div class="label">Monthly surplus reinvested</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINANCIALS -->
+  <section>
+    <h2>Financials</h2>
+    <div class="costs-wrap">
+
+      <div class="cost-box">
+        <h3>Starting Costs</h3>
+        <div class="cost-row"><span>Nets (5 × $21.99)</span><span>$110</span></div>
+        <div class="cost-row"><span>Drying racks (2 × $11.99)</span><span>$24</span></div>
+        <div class="cost-row"><span>First month of operations</span><span>$610</span></div>
+        <div class="cost-row"><span>Starting donations</span><span>−$150</span></div>
+        <div class="cost-row total"><span>Funding needed</span><span>$594</span></div>
+      </div>
+
+      <div class="cost-box">
+        <h3>Monthly Costs</h3>
+        <div class="cost-row"><span>Laundromat</span><span>$90</span></div>
+        <div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div>
+        <div class="cost-row"><span>Trash bags</span><span>$12</span></div>
+        <div class="cost-row"><span>Unsold inventory</span><span>$50</span></div>
+        <div class="cost-row"><span>CapCut Pro</span><span>$25</span></div>
+        <div class="cost-row"><span>Cloud Code</span><span>$20</span></div>
+        <div class="cost-row"><span>Transportation</span><span>$125</span></div>
+        <div class="cost-row"><span>Contingency</span><span>$273</span></div>
+        <div class="cost-row total"><span>Total</span><span>$610</span></div>
+      </div>
+
+      <div class="cost-box">
+        <h3>Monthly Revenue</h3>
+        <div class="cost-row"><span>Sales (440 lb × $1.50)</span><span>$660</span></div>
+        <div class="cost-row"><span>Donations</span><span>$150</span></div>
+        <div class="cost-row total"><span>Total</span><span>$810</span></div>
+        <div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div>
+        <div class="cost-row"><span>Ongoing surplus</span><span>$200</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- GET INVOLVED -->
+  <section>
+    <div class="cta-box">
+      <h2>Get Involved</h2>
+      <p>
+        We're always looking for <strong>volunteers</strong> to join our beach cleanups,
+        and we welcome <strong>donations</strong> to help us scale our mission.<br />
+        Every pair of hands — and every dollar — keeps more clothes out of the ocean.
+      </p>
+      <a class="cta-email" href="mailto:leo.zaks11@gmail.com">Contact Us</a>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 PikaThrift &mdash; A student non-profit dedicated to ocean cleanup and affordable clothing.
+  </footer>
+
+</body>
+</html>
