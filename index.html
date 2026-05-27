@@ -341,8 +341,9 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 
 <!-- STATS BAR -->
 <div id="stats-bar">
-  <span>♻️ <span id="clothes-saved">...</span> lbs projected saved since May 1</span>
   <span>🎯 SDG 12: Responsible Consumption and Production</span>
+  <span>🌊 Student-Run Non-Profit Beach Cleanup</span>
+  <span>♻️ Fighting Fast Fashion, One Pound at a Time</span>
 </div>
 
 <!-- NAV -->
@@ -411,32 +412,6 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
   </div>
 </section>
 
-<!-- LIVE IMPACT -->
-<section id="live-impact">
-  <h2>🌍 Live Impact Tracker</h2>
-  <div class="impact-ticker">
-    <div class="ticker-card reveal">
-      <div class="ticker-num" id="tick-lbs">0</div>
-      <div class="ticker-label">lbs of clothes projected saved</div>
-      <div class="ticker-live"><div class="live-dot"></div> counting live</div>
-    </div>
-    <div class="ticker-card reveal">
-      <div class="ticker-num" id="tick-micro">0</div>
-      <div class="ticker-label">microplastic grams prevented</div>
-      <div class="ticker-live"><div class="live-dot"></div> counting live</div>
-    </div>
-    <div class="ticker-card reveal">
-      <div class="ticker-num" id="tick-items">0</div>
-      <div class="ticker-label">clothing items given new life</div>
-      <div class="ticker-live"><div class="live-dot"></div> counting live</div>
-    </div>
-    <div class="ticker-card reveal">
-      <div class="ticker-num" id="tick-co2">0</div>
-      <div class="ticker-label">kg CO₂ equivalent saved</div>
-      <div class="ticker-live"><div class="live-dot"></div> counting live</div>
-    </div>
-  </div>
-</section>
 
 <!-- SDG 12 -->
 <section id="sdg">
@@ -630,28 +605,6 @@ window.addEventListener('scroll', () => {
 });
 
 
-// ══════════════════════════════════════════
-// LIVE CLOTHES SAVED COUNTER (projected)
-// ══════════════════════════════════════════
-const projectStart = new Date('2026-05-01').getTime();
-const lbPerMs = 440 / (30 * 24 * 60 * 60 * 1000);
-function updateSaved() {
-  const saved = Math.max(0, (Date.now() - projectStart) * lbPerMs);
-  document.getElementById('clothes-saved').textContent = saved.toFixed(2);
-}
-updateSaved();
-setInterval(updateSaved, 100);
-
-// Live impact tickers
-function updateTickers() {
-  const lbs = Math.max(0, (Date.now() - projectStart) * lbPerMs);
-  document.getElementById('tick-lbs').textContent  = lbs.toFixed(1);
-  document.getElementById('tick-micro').textContent = (lbs * 0.35).toFixed(1);
-  document.getElementById('tick-items').textContent = Math.floor(lbs * 5);
-  document.getElementById('tick-co2').textContent  = (lbs * 1.0).toFixed(1);
-}
-updateTickers();
-setInterval(updateTickers, 200);
 
 // ══════════════════════════════════════════
 // TYPING EFFECT
