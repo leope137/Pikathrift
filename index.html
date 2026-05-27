@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>PikaThrift — Ocean Cleanup Thrift</title>
+<title>PikaThrift: Ocean Cleanup Thrift</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -121,7 +121,7 @@ nav{
 /* ── SECTION WRAP ── */
 .section-wrap{background:var(--bg2);}
 section{max-width:940px;margin:0 auto;padding:80px 24px;}
-section h2{font-size:clamp(1.5rem,3vw,2.1rem);background:linear-gradient(135deg,#fff,var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px var(--glow));margin-bottom:32px;display:flex;align-items:center;gap:14px;}
+section h2{font-size:clamp(1.5rem,3vw,2.1rem);color:var(--neon);text-shadow:0 0 14px var(--glow);margin-bottom:32px;display:flex;align-items:center;gap:14px;}
 section h2::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(0,229,255,0.4),transparent);}
 
 /* Glass */
@@ -274,7 +274,7 @@ section h2::after{content:'';flex:1;height:1px;background:linear-gradient(to rig
 .contact-outer{background:linear-gradient(160deg,var(--bg) 0%,#001f3f 50%,#003d6b 100%);padding:90px 24px;position:relative;overflow:hidden;}
 .contact-outer::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,0.06),transparent 70%);}
 .contact-inner{max-width:620px;margin:0 auto;text-align:center;position:relative;z-index:2;}
-.contact-inner h2{font-size:2rem;font-weight:900;margin-bottom:16px;background:linear-gradient(135deg,#fff,var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 16px var(--glow));}
+.contact-inner h2{font-size:2rem;font-weight:900;margin-bottom:16px;color:var(--neon);text-shadow:0 0 16px var(--glow);}
 .contact-inner p{color:rgba(255,255,255,0.8);font-size:1.05rem;line-height:1.9;}
 .contact-note{display:inline-block;margin-top:18px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:10px;padding:9px 20px;color:rgba(0,229,255,0.7);font-size:0.82rem;backdrop-filter:blur(8px);}
 .contact-btn{display:inline-block;margin-top:30px;background:linear-gradient(135deg,var(--neon2),var(--neon));color:#000d1a;font-weight:900;font-size:1.05rem;padding:16px 48px;border-radius:50px;text-decoration:none;box-shadow:0 0 40px var(--glow),0 10px 30px rgba(0,0,0,0.3);transition:transform 0.25s,box-shadow 0.25s;letter-spacing:1px;}
@@ -388,7 +388,7 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 <section id="mission">
   <h2>🎯 Our Mission</h2>
   <div class="mission-box glass reveal">
-    PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches before it reaches the ocean, <strong>washes and sorts</strong> every item, then sells clean clothing <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes. Every dollar we earn goes right back into more cleanups.
+    PikaThrift is a <strong>student-run non-profit</strong> built around <strong>UN SDG Goal 12: Responsible Consumption and Production</strong>. We collect textile waste from beaches before it reaches the ocean, <strong>wash and sort</strong> every item, then sell clean clothing <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes. By giving discarded clothes a second life, we reduce waste, fight fast fashion, and put every dollar back into more cleanups.
   </div>
 </section>
 
@@ -419,16 +419,26 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
   </div>
 </section>
 
+<!-- SDG 12 -->
+<section id="sdg">
+  <h2>🎯 UN SDG Goal 12</h2>
+  <div class="mission-box glass reveal" style="border-left-color:#ffd700;">
+    <strong style="color:#ffd700;">Responsible Consumption and Production</strong> is one of the 17 United Nations Sustainable Development Goals. It calls for reducing waste, recycling materials, and making production systems more sustainable by 2030.
+    <br/><br/>
+    PikaThrift directly supports SDG 12 by <strong>intercepting textile waste</strong> before it reaches the ocean, <strong>extending the life of clothing</strong> that would otherwise be discarded, and <strong>making secondhand clothes affordable</strong> for everyone. Every pound we collect is a step toward a world that produces less, wastes less, and reuses more.
+  </div>
+</section>
+
 <!-- THE PROBLEM -->
 <section id="problem">
   <h2>⚠️ The Problem</h2>
   <div class="stat-grid">
     <div class="stat-card reveal"><div class="stat-num">1%</div><div class="stat-label">of all textiles are actually recycled</div></div>
     <div class="stat-card reveal"><div class="stat-num">35%</div><div class="stat-label">of ocean microplastics come from synthetic textiles</div></div>
-    <div class="stat-card reveal"><div class="stat-num">25%</div><div class="stat-label">of new garments go unsold due to overproduction</div></div>
+    <div class="stat-card reveal"><div class="stat-num">25%</div><div class="stat-label">of new garments remain unsold due to overproduction</div></div>
     <div class="stat-card reveal"><div class="stat-num">1.4M</div><div class="stat-label">trillion microfibres currently in our oceans</div></div>
   </div>
-  <div class="quote-block reveal">"It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."<cite>— Fashion Revolution</cite></div>
+  <div class="quote-block reveal">"It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."<cite>Source: Fashion Revolution</cite></div>
   <div class="quote-block reveal" style="margin-top:14px;">The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people constantly throw away old clothes to keep up with trends — sending more textile waste into our oceans.</div>
 </section>
 
@@ -469,7 +479,7 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 <!-- COMMUNITY -->
 <section id="community">
   <h2>🤝 Our Community</h2>
-  <div class="community-box glass reveal">Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups. We grow through <strong>flyers and brochures</strong> that spread the word and invite more people to join. Our volunteers are the backbone of PikaThrift — together we're building a movement that helps both <strong>people and the planet</strong>.</div>
+  <div class="community-box glass reveal">Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups. We grow through <strong>flyers and brochures</strong> that spread the word and invite more people to join. Our volunteers are the backbone of PikaThrift. Together we are building a movement that helps both <strong>people and the planet</strong>.</div>
 </section>
 
 <!-- JOURNEY -->
@@ -477,7 +487,7 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
   <h2>🛤️ Our Journey</h2>
   <div class="journey-grid">
     <div class="journey-card reveal"><h3>⚡ Challenges</h3><ul><li>Had to pivot from our original idea</li><li>Tough decisions about the logo</li><li>Editing 10-second and 30-second reels</li><li>Balancing acting, recording, and editing</li></ul></div>
-    <div class="journey-card reveal"><h3>🌟 Highlights</h3><ul><li>Recording our reels</li><li>Editing the final videos together</li><li>Acting and bringing the brand to life</li><li>Seeing the project come together</li></ul></div>
+    <div class="journey-card reveal"><h3>🌟 Highlights</h3><ul><li>Recording our reels</li><li>Editing the final videos together</li><li>Acting and bringing the brand to life</li><li>Building our website at pikathrift.com</li><li>Seeing the project come together</li></ul></div>
   </div>
 </section>
 
@@ -518,7 +528,7 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
   <h2>💰 Financials</h2>
   <div class="costs-wrap">
     <div class="cost-box glass reveal"><h3>Starting Costs</h3><div class="cost-row"><span>Nets (5 × $21.99)</span><span>$110</span></div><div class="cost-row"><span>Drying racks (2 × $11.99)</span><span>$24</span></div><div class="cost-row"><span>First month of operations</span><span>$610</span></div><div class="cost-row"><span>Starting donations</span><span>−$150</span></div><div class="cost-row total"><span>Funding needed</span><span>$594</span></div></div>
-    <div class="cost-box glass reveal"><h3>Monthly Costs</h3><div class="cost-row"><span>Laundromat</span><span>$90</span></div><div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div><div class="cost-row"><span>Trash bags</span><span>$12</span></div><div class="cost-row"><span>Unsold inventory</span><span>$50</span></div><div class="cost-row"><span>CapCut Pro</span><span>$25</span></div><div class="cost-row"><span>Cloud Code</span><span>$20</span></div><div class="cost-row"><span>Transportation</span><span>$125</span></div><div class="cost-row"><span>Contingency</span><span>$273</span></div><div class="cost-row total"><span>Total</span><span>$610</span></div></div>
+    <div class="cost-box glass reveal"><h3>Monthly Costs</h3><div class="cost-row"><span>Laundromat</span><span>$90</span></div><div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div><div class="cost-row"><span>Trash bags</span><span>$12</span></div><div class="cost-row"><span>Unsold inventory</span><span>$50</span></div><div class="cost-row"><span>CapCut Pro</span><span>$25</span></div><div class="cost-row"><span>Claude Code</span><span>$20</span></div><div class="cost-row"><span>Domain (pikathrift.com)</span><span>$12</span></div><div class="cost-row"><span>Transportation</span><span>$125</span></div><div class="cost-row"><span>Contingency</span><span>$261</span></div><div class="cost-row total"><span>Total</span><span>$610</span></div></div>
     <div class="cost-box glass reveal"><h3>Monthly Revenue</h3><div class="cost-row"><span>Sales (440 lb × $1.50)</span><span>$660</span></div><div class="cost-row"><span>Donations</span><span>$150</span></div><div class="cost-row total"><span>Total</span><span>$810</span></div><div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div><div class="cost-row"><span>Ongoing monthly surplus</span><span>$200</span></div></div>
   </div>
 </section>
@@ -533,7 +543,7 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 <section id="game">
   <h2>🎮 Sort the Clothes!</h2>
   <div class="game-wrap glass reveal">
-    <p>Clothes are falling into the ocean — click them before they hit the water! Miss 5 and it's over. 🌊</p>
+    <p>Clothes are falling into the ocean. Click them before they hit the water! Miss 5 and it's over. 🌊</p>
     <div id="game-score-bar">
       <span>Score: <span id="score">0</span></span>
       <span>Missed: <span id="missed">0</span>/5</span>
@@ -554,10 +564,10 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 <section id="sources">
   <h2>📚 Sources</h2>
   <div class="sources-list">
-    <div class="source-item reveal"><strong>National Library of Medicine (PMC)</strong>"Sustainable Development Goals for Textiles and Fashion" — Official U.S. government website. Cited for textile recycling rates, overproduction, microplastics, and water consumption statistics.</div>
-    <div class="source-item reveal"><strong>Fashion Revolution</strong>"What's In Our Clothes and How Does it Affect the Oceans?" — Non-profit focused on fashion and the environment. Cited for microfibre pollution statistics.</div>
-    <div class="source-item reveal"><strong>Marketplace</strong>"What can clothing retailers do with all that excess inventory?" — Non-profit raising public awareness about economics and tech. Cited for the Burberry unsold merchandise statistic.</div>
-    <div class="source-item reveal"><strong>Goodwill</strong>"What Is Goodwill's Diversion Rate From The Landfills?" — Non-profit focused on giving clothes a second life. Referenced for textile diversion and resale context.</div>
+    <div class="source-item reveal"><strong>National Library of Medicine (PMC)</strong>"Sustainable Development Goals for Textiles and Fashion." Official U.S. government website. Cited for textile recycling rates, overproduction, microplastics, and water consumption statistics.</div>
+    <div class="source-item reveal"><strong>Fashion Revolution</strong>"What's In Our Clothes and How Does it Affect the Oceans?" Non-profit focused on fashion and the environment. Cited for microfibre pollution statistics.</div>
+    <div class="source-item reveal"><strong>Marketplace</strong>"What can clothing retailers do with all that excess inventory?" Non-profit raising public awareness about economics and tech. Cited for the Burberry unsold merchandise statistic.</div>
+    <div class="source-item reveal"><strong>Goodwill</strong>"What Is Goodwill's Diversion Rate From The Landfills?" Non-profit focused on giving clothes a second life. Referenced for textile diversion and resale context.</div>
   </div>
 </section>
 </div>
@@ -567,12 +577,12 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
   <div class="contact-inner reveal">
     <h2>✉️ Get In Touch</h2>
     <p>Interested in volunteering or partnering with us?<br/>We'd love to hear from you!</p>
-    <div class="contact-note">📚 School project demo — not yet accepting payments or donations</div><br/>
+    <div class="contact-note">📚 School project demo. Not yet accepting payments or donations.</div><br/>
     <a class="contact-btn" href="https://mail.google.com/mail/?view=cm&to=leo.zaks11@gmail.com" target="_blank">📧 Send Us an Email</a>
   </div>
 </div>
 
-<footer>&copy; 2026 PikaThrift — A student non-profit dedicated to ocean cleanup and affordable clothing.</footer>
+<footer>&copy; 2026 PikaThrift. A student non-profit dedicated to ocean cleanup and affordable clothing.</footer>
 
 <!-- FLOATING BUTTONS -->
 <button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
