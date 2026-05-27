@@ -479,6 +479,60 @@
     .charity-box h3 { font-size: 1.2rem; color: var(--blue-dark); margin-bottom: 10px; }
     .charity-box p { font-size: 0.95rem; color: #4a6274; line-height: 1.8; }
 
+    /* ── GAME ── */
+    .game-wrap {
+      background: white; border-radius: 24px; padding: 32px;
+      box-shadow: 0 8px 32px rgba(0,119,182,0.12); text-align: center;
+    }
+    .game-wrap p { color: #4a6274; margin-bottom: 20px; font-size: 0.95rem; }
+    #game-area {
+      position: relative; width: 100%; height: 340px;
+      background: linear-gradient(180deg, #caf0f8 0%, #90e0ef 50%, #48cae4 100%);
+      border-radius: 18px; overflow: hidden; cursor: pointer;
+      user-select: none;
+    }
+    #game-ocean-floor {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+      background: linear-gradient(180deg, #0096c7, #005f8e);
+      border-radius: 0 0 18px 18px;
+    }
+    .falling-item {
+      position: absolute; top: -60px; font-size: 2rem;
+      cursor: pointer; transition: transform 0.1s;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+      animation: none;
+    }
+    .falling-item:hover { transform: scale(1.2); }
+    #game-score-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; padding: 0 4px;
+    }
+    #game-score-bar span { font-weight: 700; color: var(--blue-dark); font-size: 1rem; }
+    #game-msg {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.9); border-radius: 16px;
+      padding: 20px 32px; font-weight: 700; font-size: 1.1rem;
+      color: var(--blue-dark); pointer-events: none;
+      opacity: 0; transition: opacity 0.3s; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,119,182,0.2);
+    }
+    #game-msg.show { opacity: 1; }
+    #start-btn {
+      margin-top: 18px; padding: 12px 36px;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+      color: white; border: none; border-radius: 50px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,119,182,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,119,182,0.4); }
+    #sdg-badge {
+      display: inline-block; margin-top: 16px;
+      background: #e8f5e9; border: 2px solid #66bb6a;
+      border-radius: 10px; padding: 6px 16px;
+      color: #2e7d32; font-size: 0.82rem; font-weight: 600;
+    }
+
     /* ── SOURCES ── */
     .sources-list { display: flex; flex-direction: column; gap: 12px; }
     .source-item {
@@ -773,6 +827,26 @@
     </div>
   </section>
 
+  <!-- GAME -->
+  <section id="game">
+    <h2>🎮 Sort the Clothes!</h2>
+    <div class="game-wrap reveal">
+      <p>Clothes are falling into the ocean — click them before they hit the water to rescue them! Each rescued item = responsible consumption. 🌊</p>
+      <div id="game-score-bar">
+        <span>Score: <span id="score">0</span></span>
+        <span>Missed: <span id="missed">0</span>/5</span>
+        <span>Time: <span id="timer">30</span>s</span>
+      </div>
+      <div id="game-area">
+        <div id="game-ocean-floor"></div>
+        <div id="game-msg">Click to Start!</div>
+      </div>
+      <button id="start-btn">▶ Start Game</button>
+      <br />
+      <span id="sdg-badge">🎯 SDG 12: Responsible Consumption &amp; Production</span>
+    </div>
+  </section>
+
   <!-- SOURCES -->
   <section id="sources">
     <h2>📚 Sources</h2>
@@ -805,7 +879,7 @@
       <p>Interested in volunteering or partnering with us?<br />We'd love to hear from you!</p>
       <div class="contact-note">📚 School project demo — not yet accepting payments or donations</div>
       <br />
-      <a class="contact-btn" href="mailto:leo.zaks11@gmail.com">📧 Send Us an Email</a>
+      <a class="contact-btn" href="https://mail.google.com/mail/?view=cm&to=leo.zaks11@gmail.com" target="_blank">📧 Send Us an Email</a>
     </div>
   </div>
 
@@ -855,6 +929,104 @@
     requestAnimationFrame(drawStars);
     window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
 
+    // ── CLOTHING SORT GAME ──
+    const ITEMS = ['👕','👗','👖','🧥','👔','🧣','🧤','👒','🩱','🧦'];
+    const BAD =   ['🗑️','💀','🐟'];
+    let gameScore = 0, gameMissed = 0, gameTime = 30;
+    let gameRunning = false, gameInterval, timerInterval, spawnInterval;
+
+    const area   = document.getElementById('game-area');
+    const scoreEl = document.getElementById('score');
+    const missedEl = document.getElementById('missed');
+    const timerEl  = document.getElementById('timer');
+    const msgEl    = document.getElementById('game-msg');
+    const startBtn = document.getElementById('start-btn');
+
+    function showMsg(text, duration = 1200) {
+      msgEl.innerHTML = text;
+      msgEl.classList.add('show');
+      setTimeout(() => msgEl.classList.remove('show'), duration);
+    }
+
+    function spawnItem() {
+      const isClothing = Math.random() > 0.25;
+      const pool = isClothing ? ITEMS : BAD;
+      const emoji = pool[Math.floor(Math.random() * pool.length)];
+      const el = document.createElement('div');
+      el.className = 'falling-item';
+      el.textContent = emoji;
+      el.style.left = (8 + Math.random() * 80) + '%';
+      el.style.top = '-50px';
+      el.dataset.clothing = isClothing;
+
+      el.addEventListener('click', () => {
+        if (!gameRunning) return;
+        if (isClothing) {
+          gameScore++;
+          scoreEl.textContent = gameScore;
+          showMsg('♻️ Rescued! +1', 600);
+        } else {
+          showMsg('❌ That\'s trash!', 600);
+        }
+        el.remove();
+      });
+
+      area.appendChild(el);
+
+      let pos = -50;
+      const speed = 1.2 + Math.random() * 1.4;
+      const fall = setInterval(() => {
+        if (!gameRunning) { clearInterval(fall); el.remove(); return; }
+        pos += speed;
+        el.style.top = pos + 'px';
+        if (pos > area.clientHeight - 65) {
+          clearInterval(fall);
+          if (isClothing && el.parentNode) {
+            gameMissed++;
+            missedEl.textContent = gameMissed;
+            showMsg('🌊 It hit the ocean!', 700);
+            if (gameMissed >= 5) endGame();
+          }
+          el.remove();
+        }
+      }, 16);
+    }
+
+    function startGame() {
+      gameScore = 0; gameMissed = 0; gameTime = 30;
+      gameRunning = true;
+      scoreEl.textContent = 0;
+      missedEl.textContent = 0;
+      timerEl.textContent = 30;
+      startBtn.textContent = '⏹ Running...';
+      startBtn.disabled = true;
+      area.querySelectorAll('.falling-item').forEach(e => e.remove());
+
+      spawnInterval = setInterval(spawnItem, 900);
+      timerInterval = setInterval(() => {
+        gameTime--;
+        timerEl.textContent = gameTime;
+        if (gameTime <= 0) endGame();
+      }, 1000);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      clearInterval(spawnInterval);
+      clearInterval(timerInterval);
+      area.querySelectorAll('.falling-item').forEach(e => e.remove());
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ Play Again';
+      const msg = gameScore >= 20 ? `🏆 Amazing! ${gameScore} clothes saved!` :
+                  gameScore >= 10 ? `🌊 Great job! ${gameScore} clothes rescued!` :
+                                    `♻️ ${gameScore} saved. Try again!`;
+      showMsg(msg, 3000);
+    }
+
+    startBtn.addEventListener('click', startGame);
+    showMsg('Click Start to Play! 👕', 99999);
+
+    // ── SCROLL REVEAL ──
     // Scroll reveal
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
