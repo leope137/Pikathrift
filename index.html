@@ -28,7 +28,7 @@
       padding: 12px 36px;
     }
     .nav-logo { display: flex; align-items: center; gap: 10px; }
-    .nav-logo img { height: 40px; width: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); }
+    .nav-logo img { height: 40px; width: 40px; border-radius: 50%; object-fit: contain; background: white; padding: 3px; border: 2px solid rgba(255,255,255,0.3); }
     .nav-logo span { color: white; font-weight: 800; font-size: 1.1rem; letter-spacing: 1px; }
     .nav-links { display: flex; gap: 26px; }
     .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
@@ -111,6 +111,9 @@
       width: 200px; height: 200px;
       border-radius: 50%;
       object-fit: cover;
+      object-fit: contain;
+      background: white;
+      padding: 8px;
       border: 5px solid rgba(255,255,255,0.5);
       box-shadow:
         0 0 0 8px rgba(0,180,216,0.2),
