@@ -5,1067 +5,930 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PikaThrift</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --bg:#020d1a; --bg2:#041525; --bg3:#061c30;
+      --neon:#00e5ff; --neon2:#0077b6; --neon3:#7df9ff;
+      --glow:rgba(0,229,255,0.35);
+      --card:rgba(255,255,255,0.04);
+      --border:rgba(0,229,255,0.18);
+      --text:#cde8f5; --text2:#7fb8d4;
+    }
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;overflow-x:hidden;}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--neon);border-radius:3px;}
 
-    :root {
-      --blue-dark: #0077b6;
-      --blue-mid: #00b4d8;
-      --blue-light: #90e0ef;
-      --bg: #f0f8ff;
+    /* ── CURSOR GLOW ── */
+    #cursor-glow{
+      position:fixed;width:300px;height:300px;border-radius:50%;
+      background:radial-gradient(circle,rgba(0,229,255,0.07),transparent 70%);
+      pointer-events:none;transform:translate(-50%,-50%);z-index:9999;
+      transition:opacity 0.3s;
     }
 
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1a2e3b; overflow-x: hidden; }
-
-    /* ── NAVBAR ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      background: rgba(0,25,50,0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 36px;
+    /* ── NAV ── */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:500;
+      background:rgba(2,13,26,0.85);backdrop-filter:blur(24px);
+      border-bottom:1px solid rgba(0,229,255,0.12);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:11px 40px;
     }
-    .nav-logo { display: flex; align-items: center; gap: 10px; }
-    .nav-logo img { height: 40px; width: 40px; border-radius: 50%; object-fit: contain; background: white; padding: 3px; border: 2px solid rgba(255,255,255,0.3); }
-    .nav-logo span { color: white; font-weight: 800; font-size: 1.1rem; letter-spacing: 1px; }
-    .nav-links { display: flex; gap: 26px; }
-    .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
-    .nav-links a:hover { color: #90e0ef; }
+    .nav-logo{display:flex;align-items:center;gap:10px;}
+    .nav-logo img{
+      height:38px;width:38px;border-radius:50%;
+      object-fit:contain;background:white;padding:3px;
+      border:2px solid rgba(0,229,255,0.4);
+      box-shadow:0 0 12px var(--glow);
+    }
+    .nav-logo span{
+      color:white;font-weight:800;font-size:1.1rem;letter-spacing:2px;
+      text-shadow:0 0 10px var(--glow);
+    }
+    .nav-links{display:flex;gap:24px;}
+    .nav-links a{
+      color:var(--text2);text-decoration:none;font-size:0.85rem;
+      letter-spacing:0.5px;transition:color 0.2s,text-shadow 0.2s;
+    }
+    .nav-links a:hover{color:var(--neon);text-shadow:0 0 8px var(--glow);}
 
     /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      background: linear-gradient(160deg, #001f3f 0%, #003d6b 30%, #0077b6 60%, #00b4d8 85%, #48cae4 100%);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 140px 20px 160px;
-      position: relative; overflow: hidden;
+    .hero{
+      position:relative;width:100%;height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;overflow:hidden;
+    }
+    #ocean-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+
+    .hero-content{position:relative;z-index:2;padding:20px;}
+
+    /* Big logo */
+    .logo-wrap{position:relative;width:230px;height:230px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;}
+    .ring{position:absolute;border-radius:50%;border:2px solid transparent;animation:spin linear infinite;}
+    .ring1{inset:-10px;border-top-color:var(--neon);border-right-color:rgba(0,229,255,0.3);animation-duration:3s;}
+    .ring2{inset:-20px;border-bottom-color:rgba(0,119,182,0.8);border-left-color:rgba(0,119,182,0.2);animation-duration:5s;animation-direction:reverse;}
+    .ring3{inset:-32px;border-top-color:rgba(0,229,255,0.2);border-right-color:rgba(0,229,255,0.5);animation-duration:8s;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .hero-logo{
+      width:210px;height:210px;border-radius:50%;
+      object-fit:contain;background:white;padding:10px;
+      border:4px solid rgba(0,229,255,0.5);
+      box-shadow:0 0 0 8px rgba(0,229,255,0.08),0 0 50px rgba(0,229,255,0.4),0 0 100px rgba(0,119,182,0.3),inset 0 0 20px rgba(0,229,255,0.05);
+      animation:logoPulse 4s ease-in-out infinite;
+    }
+    @keyframes logoPulse{
+      0%,100%{box-shadow:0 0 0 8px rgba(0,229,255,0.08),0 0 50px rgba(0,229,255,0.3),0 0 100px rgba(0,119,182,0.2);}
+      50%{box-shadow:0 0 0 16px rgba(0,229,255,0.12),0 0 80px rgba(0,229,255,0.6),0 0 140px rgba(0,119,182,0.4);}
     }
 
-    /* Canvas stars */
-    #stars-canvas {
-      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    .hero h1{
+      font-size:clamp(3rem,9vw,6rem);font-weight:900;letter-spacing:5px;
+      background:linear-gradient(135deg,#fff 0%,var(--neon) 40%,var(--neon3) 70%,#fff 100%);
+      background-size:200% 200%;
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      animation:gradShift 4s ease-in-out infinite, fadeUp 0.8s ease both;
+      filter:drop-shadow(0 0 20px var(--glow));
     }
+    @keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+    .hero .tagline{
+      font-size:clamp(1rem,2.5vw,1.3rem);color:rgba(255,255,255,0.85);
+      margin-top:16px;line-height:1.8;
+      animation:fadeUp 0.8s 0.2s ease both;
+      text-shadow:0 0 20px rgba(0,229,255,0.3);
+    }
+    .hero .badge{
+      display:inline-block;margin-top:22px;
+      background:rgba(0,229,255,0.08);
+      border:1.5px solid rgba(0,229,255,0.3);
+      border-radius:30px;padding:8px 24px;
+      color:var(--neon);font-size:0.88rem;letter-spacing:1.5px;
+      backdrop-filter:blur(8px);
+      box-shadow:0 0 20px rgba(0,229,255,0.15);
+      animation:fadeUp 0.8s 0.4s ease both;
+    }
+    .hero-btn{
+      display:inline-block;margin-top:32px;
+      background:linear-gradient(135deg,var(--neon2),var(--neon));
+      color:#000d1a;font-weight:900;font-size:1rem;padding:15px 42px;
+      border-radius:50px;text-decoration:none;
+      box-shadow:0 0 30px var(--glow),0 8px 24px rgba(0,0,0,0.3);
+      transition:transform 0.25s,box-shadow 0.25s;
+      animation:fadeUp 0.8s 0.6s ease both;letter-spacing:1px;
+    }
+    .hero-btn:hover{transform:translateY(-5px) scale(1.03);box-shadow:0 0 50px var(--glow),0 16px 36px rgba(0,0,0,0.4);}
 
-    /* Animated bubbles */
-    .bubbles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
-    .bubble {
-      position: absolute; bottom: -100px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 50%;
-      animation: rise linear infinite;
-    }
-    .bubble:nth-child(1)  { width:22px; height:22px; left:5%;  animation-duration:9s;  animation-delay:0s; }
-    .bubble:nth-child(2)  { width:12px; height:12px; left:14%; animation-duration:6s;  animation-delay:1.2s; }
-    .bubble:nth-child(3)  { width:30px; height:30px; left:25%; animation-duration:11s; animation-delay:0.5s; }
-    .bubble:nth-child(4)  { width:8px;  height:8px;  left:36%; animation-duration:7s;  animation-delay:2s; }
-    .bubble:nth-child(5)  { width:18px; height:18px; left:47%; animation-duration:8s;  animation-delay:0.8s; }
-    .bubble:nth-child(6)  { width:14px; height:14px; left:58%; animation-duration:10s; animation-delay:3.5s; }
-    .bubble:nth-child(7)  { width:26px; height:26px; left:67%; animation-duration:9s;  animation-delay:1s; }
-    .bubble:nth-child(8)  { width:10px; height:10px; left:76%; animation-duration:6s;  animation-delay:2.8s; }
-    .bubble:nth-child(9)  { width:20px; height:20px; left:85%; animation-duration:8s;  animation-delay:0.3s; }
-    .bubble:nth-child(10) { width:16px; height:16px; left:93%; animation-duration:7s;  animation-delay:1.7s; }
-    @keyframes rise {
-      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-      10%  { opacity: 0.8; }
-      90%  { opacity: 0.4; }
-      100% { transform: translateY(-110vh) translateX(20px) scale(1.4); opacity: 0; }
-    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(35px);}to{opacity:1;transform:translateY(0);}}
 
-    /* Hero content */
-    .hero-content { position: relative; z-index: 2; }
-
-    /* BIG logo */
-    .logo-ring {
-      position: relative;
-      width: 220px; height: 220px;
-      margin: 0 auto 30px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .logo-ring::before, .logo-ring::after {
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      animation: spinRing linear infinite;
-    }
-    .logo-ring::before {
-      inset: -8px;
-      border: 3px solid transparent;
-      border-top-color: rgba(144,224,239,0.9);
-      border-right-color: rgba(144,224,239,0.4);
-      animation-duration: 3s;
-    }
-    .logo-ring::after {
-      inset: -16px;
-      border: 2px solid transparent;
-      border-bottom-color: rgba(0,180,216,0.7);
-      border-left-color: rgba(0,180,216,0.3);
-      animation-duration: 5s;
-      animation-direction: reverse;
-    }
-    @keyframes spinRing { to { transform: rotate(360deg); } }
-
-    .hero-logo {
-      width: 200px; height: 200px;
-      border-radius: 50%;
-      object-fit: cover;
-      object-fit: contain;
-      background: white;
-      padding: 8px;
-      border: 5px solid rgba(255,255,255,0.5);
-      box-shadow:
-        0 0 0 8px rgba(0,180,216,0.2),
-        0 0 40px rgba(144,224,239,0.5),
-        0 0 80px rgba(0,119,182,0.4),
-        0 20px 60px rgba(0,0,0,0.4);
-      animation: logoPulse 4s ease-in-out infinite;
-    }
-    @keyframes logoPulse {
-      0%, 100% { box-shadow: 0 0 0 8px rgba(0,180,216,0.2), 0 0 40px rgba(144,224,239,0.4), 0 0 80px rgba(0,119,182,0.3), 0 20px 60px rgba(0,0,0,0.4); }
-      50%       { box-shadow: 0 0 0 14px rgba(0,180,216,0.3), 0 0 70px rgba(144,224,239,0.7), 0 0 120px rgba(0,119,182,0.5), 0 20px 60px rgba(0,0,0,0.4); }
-    }
-
-    .hero h1 {
-      font-size: clamp(3rem, 8vw, 5.5rem);
-      font-weight: 900;
-      letter-spacing: 4px;
-      background: linear-gradient(135deg, #ffffff 30%, #90e0ef 70%, #caf0f8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: none;
-      filter: drop-shadow(0 4px 20px rgba(0,180,216,0.5));
-      animation: fadeUp 0.8s ease both;
-    }
-    .hero .tagline {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
-      color: rgba(255,255,255,0.88);
-      margin-top: 18px;
-      line-height: 1.8;
-      animation: fadeUp 0.8s 0.2s ease both;
-    }
-    .hero .badge {
-      display: inline-block;
-      margin-top: 22px;
-      background: rgba(255,255,255,0.1);
-      border: 1.5px solid rgba(255,255,255,0.35);
-      border-radius: 30px;
-      padding: 8px 24px;
-      color: rgba(255,255,255,0.9);
-      font-size: 0.88rem;
-      letter-spacing: 1.5px;
-      backdrop-filter: blur(6px);
-      animation: fadeUp 0.8s 0.4s ease both;
-    }
-    .hero-btn {
-      display: inline-block;
-      margin-top: 34px;
-      background: linear-gradient(135deg, #fff, #caf0f8);
-      color: #003d6b;
-      font-weight: 800;
-      font-size: 1rem;
-      padding: 15px 40px;
-      border-radius: 50px;
-      text-decoration: none;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.25), 0 0 0 0 rgba(144,224,239,0.5);
-      transition: transform 0.25s, box-shadow 0.25s;
-      animation: fadeUp 0.8s 0.6s ease both;
-    }
-    .hero-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 30px rgba(144,224,239,0.4);
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(35px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Multi-layer animated waves */
-    .waves-container {
-      position: absolute; bottom: 0; left: 0; width: 100%; z-index: 3;
-      overflow: hidden; line-height: 0;
-    }
-    .wave-svg { position: absolute; bottom: 0; width: 200%; }
-    .wave-svg path { fill: rgba(240,248,255,1); }
-    .wave1 { animation: waveMove 8s linear infinite; }
-    .wave2 { animation: waveMove 12s linear infinite reverse; opacity: 0.5; }
-    .wave3 { animation: waveMove 6s linear infinite; opacity: 0.3; }
-    .wave-spacer { height: 60px; }
-    @keyframes waveMove {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
+    /* ── WAVE DIVIDER ── */
+    .wave-div{width:100%;overflow:hidden;line-height:0;background:var(--bg2);}
+    .wave-div.flip{transform:scaleY(-1);}
+    .wave-div svg path{fill:var(--bg);}
+    .wave-div.alt svg path{fill:var(--bg2);}
 
     /* ── SECTIONS ── */
-    section { max-width: 920px; margin: 0 auto; padding: 80px 24px; }
-    section h2 {
-      font-size: clamp(1.6rem, 3vw, 2.1rem);
-      color: var(--blue-dark);
-      margin-bottom: 32px;
-      display: flex; align-items: center; gap: 12px;
+    .section-wrap{background:var(--bg2);padding:0;}
+    section{max-width:940px;margin:0 auto;padding:80px 24px;}
+    section h2{
+      font-size:clamp(1.5rem,3vw,2.1rem);
+      background:linear-gradient(135deg,#fff,var(--neon));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      filter:drop-shadow(0 0 12px var(--glow));
+      margin-bottom:32px;display:flex;align-items:center;gap:14px;
     }
-    section h2::after {
-      content: '';
-      flex: 1; height: 3px;
-      background: linear-gradient(to right, var(--blue-mid), transparent);
-      border-radius: 2px;
+    section h2::after{
+      content:'';flex:1;height:1px;
+      background:linear-gradient(to right,rgba(0,229,255,0.4),transparent);
     }
 
-    /* Scroll reveal */
-    .reveal { opacity: 0; transform: translateY(45px); transition: opacity 0.75s ease, transform 0.75s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    /* Glass card base */
+    .glass{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+      box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.05);
+      transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;
+    }
+    .glass:hover{
+      border-color:rgba(0,229,255,0.4);
+      box-shadow:0 16px 48px rgba(0,0,0,0.4),0 0 30px rgba(0,229,255,0.1),inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(40px);transition:opacity 0.75s ease,transform 0.75s ease;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
 
     /* ── MISSION ── */
-    .mission-box {
-      background: white;
-      border-radius: 24px;
-      padding: 36px 40px;
-      box-shadow: 0 8px 40px rgba(0,119,182,0.12);
-      font-size: 1.12rem;
-      line-height: 2;
-      border-left: 7px solid var(--blue-mid);
-      position: relative;
-      overflow: hidden;
+    .mission-box{
+      padding:36px 40px;line-height:2;font-size:1.08rem;
+      border-left:4px solid var(--neon);color:var(--text);
+      position:relative;overflow:hidden;
     }
-    .mission-box::after {
-      content: '🌊';
-      position: absolute;
-      right: 20px; bottom: 10px;
-      font-size: 5rem;
-      opacity: 0.06;
+    .mission-box::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(circle at 80% 50%,rgba(0,229,255,0.04),transparent 60%);
     }
-    .mission-box strong { color: var(--blue-dark); }
+    .mission-box strong{color:var(--neon);}
 
     /* ── STEPS ── */
-    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px; }
-    .step {
-      background: white;
-      border-radius: 22px;
-      padding: 32px 22px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-      border-top: 5px solid var(--blue-mid);
-      transition: transform 0.3s, box-shadow 0.3s;
-      cursor: default;
-      position: relative;
-      overflow: hidden;
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;}
+    .step{
+      padding:30px 22px;text-align:center;
+      background:var(--card);border:1px solid var(--border);border-radius:22px;
+      transition:transform 0.3s,box-shadow 0.3s,border-color 0.3s;
+      backdrop-filter:blur(16px);cursor:default;position:relative;overflow:hidden;
     }
-    .step::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(0,180,216,0.05), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
+    .step::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,transparent,var(--neon),transparent);
+      transform:scaleX(0);transition:transform 0.4s;
     }
-    .step:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 50px rgba(0,119,182,0.2); }
-    .step:hover::before { opacity: 1; }
-    .step .icon { font-size: 3rem; margin-bottom: 16px; display: block; filter: drop-shadow(0 4px 8px rgba(0,119,182,0.3)); }
-    .step h3 { color: var(--blue-dark); margin-bottom: 10px; font-size: 1.05rem; }
-    .step p { font-size: 0.88rem; line-height: 1.7; color: #4a6274; }
+    .step:hover::before{transform:scaleX(1);}
+    .step:hover{transform:translateY(-10px);border-color:rgba(0,229,255,0.45);box-shadow:0 20px 50px rgba(0,0,0,0.5),0 0 30px rgba(0,229,255,0.12);}
+    .step .icon{font-size:2.8rem;margin-bottom:14px;display:block;filter:drop-shadow(0 4px 10px rgba(0,229,255,0.4));}
+    .step h3{color:var(--neon);margin-bottom:10px;font-size:0.95rem;letter-spacing:0.5px;}
+    .step p{font-size:0.87rem;line-height:1.7;color:var(--text2);}
 
     /* ── NUMBERS ── */
-    .numbers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px; }
-    .number-card {
-      background: linear-gradient(145deg, #0077b6, #00b4d8);
-      border-radius: 22px;
-      padding: 36px 18px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.25);
-      color: white;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
+    .numbers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;}
+    .number-card{
+      padding:36px 18px;text-align:center;
+      background:var(--card);border:1px solid var(--border);border-radius:22px;
+      backdrop-filter:blur(16px);transition:transform 0.3s,box-shadow 0.3s;
+      position:relative;overflow:hidden;
     }
-    .number-card::before {
-      content: '';
-      position: absolute;
-      top: -30px; right: -30px;
-      width: 100px; height: 100px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 50%;
+    .number-card::after{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(circle at 50% 0%,rgba(0,229,255,0.06),transparent 60%);
     }
-    .number-card::after {
-      content: '';
-      position: absolute;
-      bottom: -20px; left: -20px;
-      width: 70px; height: 70px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 50%;
+    .number-card:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 20px 50px rgba(0,0,0,0.5),0 0 40px rgba(0,229,255,0.15);}
+    .number-card .num{
+      font-size:2.6rem;font-weight:900;position:relative;z-index:1;
+      background:linear-gradient(135deg,#fff,var(--neon));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
     }
-    .number-card:hover { transform: translateY(-8px) scale(1.03); box-shadow: 0 20px 50px rgba(0,119,182,0.35); }
-    .number-card .num { font-size: 2.6rem; font-weight: 900; position: relative; z-index: 1; }
-    .number-card .label { font-size: 0.82rem; opacity: 0.88; margin-top: 8px; position: relative; z-index: 1; }
+    .number-card .label{font-size:0.82rem;color:var(--text2);margin-top:8px;position:relative;z-index:1;}
 
-    /* ── FINANCIALS ── */
-    .costs-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
-    .cost-box {
-      background: white;
-      border-radius: 22px;
-      padding: 28px 26px;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-      transition: transform 0.3s, box-shadow 0.3s;
+    /* ── STAT CARDS ── */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+    .stat-card{
+      padding:30px 22px;text-align:center;
+      background:var(--card);border:1px solid var(--border);border-radius:22px;
+      backdrop-filter:blur(16px);transition:transform 0.3s,border-color 0.3s,box-shadow 0.3s;
     }
-    .cost-box:hover { transform: translateY(-6px); box-shadow: 0 16px 44px rgba(0,119,182,0.18); }
-    .cost-box h3 {
-      color: var(--blue-dark); font-size: 1rem;
-      margin-bottom: 16px; padding-bottom: 12px;
-      border-bottom: 2px solid #e0f0fa;
+    .stat-card:hover{transform:translateY(-8px);border-color:rgba(0,229,255,0.4);box-shadow:0 20px 50px rgba(0,0,0,0.4),0 0 30px rgba(0,229,255,0.1);}
+    .stat-card .stat-num{
+      font-size:2.8rem;font-weight:900;
+      background:linear-gradient(135deg,var(--neon3),var(--neon));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      filter:drop-shadow(0 0 10px var(--glow));
     }
-    .cost-row {
-      display: flex; justify-content: space-between;
-      font-size: 0.87rem; padding: 7px 0;
-      color: #4a6274; border-bottom: 1px solid #f0f7fc;
+    .stat-card .stat-label{font-size:0.85rem;color:var(--text2);margin-top:8px;line-height:1.5;}
+    .quote-block{
+      background:rgba(0,229,255,0.04);border-left:4px solid var(--neon);
+      border-radius:16px;padding:22px 28px;margin-top:18px;
+      font-size:0.95rem;line-height:1.9;color:var(--text);
+      border:1px solid var(--border);border-left:4px solid var(--neon);
     }
-    .cost-row.total {
-      font-weight: 700; color: var(--blue-dark);
-      border-bottom: none; margin-top: 10px; font-size: 0.95rem;
-    }
-
-    /* ── CONTACT ── */
-    .contact-outer {
-      background: linear-gradient(160deg, #001f3f 0%, #0077b6 50%, #00b4d8 100%);
-      padding: 80px 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    .contact-waves-top { position: absolute; top: 0; left: 0; width: 100%; transform: rotate(180deg); }
-    .contact-inner {
-      max-width: 620px; margin: 0 auto;
-      text-align: center; position: relative; z-index: 2;
-    }
-    .contact-inner h2 {
-      color: white; font-size: 2rem;
-      font-weight: 900; margin-bottom: 16px;
-    }
-    .contact-inner p {
-      color: rgba(255,255,255,0.88);
-      font-size: 1.05rem; line-height: 1.9;
-    }
-    .contact-note {
-      display: inline-block; margin-top: 20px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 12px; padding: 10px 22px;
-      color: rgba(255,255,255,0.75); font-size: 0.83rem;
-      backdrop-filter: blur(6px);
-    }
-    .contact-btn {
-      display: inline-block; margin-top: 32px;
-      background: white; color: #003d6b;
-      font-weight: 800; font-size: 1.05rem;
-      padding: 16px 44px; border-radius: 50px;
-      text-decoration: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      transition: transform 0.25s, box-shadow 0.25s;
-    }
-    .contact-btn:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 44px rgba(0,0,0,0.3);
-    }
-
-    /* Floating orbs in bg */
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(144,224,239,0.15), transparent 70%);
-      pointer-events: none;
-      animation: float ease-in-out infinite;
-    }
-    .orb1 { width:400px; height:400px; top:-100px; right:-100px; animation-duration:8s; }
-    .orb2 { width:300px; height:300px; bottom:-80px; left:-80px; animation-duration:10s; animation-delay:2s; }
-    @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50%       { transform: translateY(-30px) scale(1.05); }
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center; padding: 28px 20px;
-      font-size: 0.82rem; color: #789aaa;
-      background: #d0eaf6;
-    }
-
-    /* Section dividers */
-    .wave-divider { width: 100%; overflow: hidden; line-height: 0; background: var(--bg); }
-    .wave-divider svg { display: block; }
-
-    /* ── STAT CARDS (The Problem) ── */
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-    .stat-card {
-      background: white; border-radius: 22px; padding: 28px 22px; text-align: center;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-      border-bottom: 5px solid var(--blue-mid);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .stat-card:hover { transform: translateY(-8px); box-shadow: 0 20px 44px rgba(0,119,182,0.18); }
-    .stat-card .stat-num { font-size: 2.4rem; font-weight: 900; color: var(--blue-dark); }
-    .stat-card .stat-label { font-size: 0.85rem; color: #4a6274; margin-top: 8px; line-height: 1.5; }
-    .quote-block {
-      background: linear-gradient(135deg, #eaf6fc, #d0eef9);
-      border-left: 5px solid var(--blue-mid);
-      border-radius: 16px; padding: 22px 28px;
-      margin-top: 20px; font-size: 0.95rem; line-height: 1.85;
-      color: #2a4a5e;
-    }
-    .quote-block cite { display: block; margin-top: 10px; font-style: normal; font-weight: 700; color: var(--blue-dark); font-size: 0.82rem; }
+    .quote-block cite{display:block;margin-top:10px;font-style:normal;font-weight:700;color:var(--neon);font-size:0.82rem;}
 
     /* ── TEAM ── */
-    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px; }
-    .team-card {
-      background: white; border-radius: 22px; padding: 32px 20px;
-      text-align: center; box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-      transition: transform 0.3s, box-shadow 0.3s;
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px;}
+    .team-card{
+      padding:34px 20px;text-align:center;
+      background:var(--card);border:1px solid var(--border);border-radius:22px;
+      backdrop-filter:blur(16px);transition:transform 0.3s,border-color 0.3s,box-shadow 0.3s;
     }
-    .team-card:hover { transform: translateY(-8px); box-shadow: 0 20px 44px rgba(0,119,182,0.18); }
-    .team-avatar {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; font-weight: 800; color: white; letter-spacing: 1px;
-      margin: 0 auto 16px;
-      box-shadow: 0 6px 20px rgba(0,119,182,0.25);
+    .team-card:hover{transform:translateY(-10px);border-color:rgba(0,229,255,0.5);box-shadow:0 20px 50px rgba(0,0,0,0.5),0 0 40px rgba(0,229,255,0.15);}
+    .team-avatar{
+      width:74px;height:74px;border-radius:50%;
+      background:linear-gradient(135deg,var(--neon2),var(--neon));
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.1rem;font-weight:900;color:#000d1a;letter-spacing:1px;
+      margin:0 auto 18px;
+      box-shadow:0 0 24px var(--glow);
     }
-    .team-card h3 { font-size: 1rem; color: #1a2e3b; margin-bottom: 6px; }
-    .team-card .role { font-size: 0.82rem; color: var(--blue-dark); font-weight: 600; }
-    .team-slogan {
-      text-align: center; margin-top: 28px;
-      font-size: 1.2rem; font-weight: 800;
-      color: var(--blue-dark); letter-spacing: 1px;
-      padding: 20px; background: white; border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,119,182,0.1);
-      border: 2px dashed var(--blue-light);
+    .team-card h3{font-size:1rem;color:#fff;margin-bottom:6px;}
+    .team-card .role{font-size:0.8rem;color:var(--neon);font-weight:600;letter-spacing:0.5px;}
+    .team-slogan{
+      text-align:center;margin-top:28px;
+      font-size:1.2rem;font-weight:800;
+      color:var(--neon);letter-spacing:2px;
+      padding:22px;
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      backdrop-filter:blur(16px);
+      text-shadow:0 0 20px var(--glow);
     }
 
     /* ── COMMUNITY ── */
-    .community-box {
-      background: white; border-radius: 22px; padding: 32px 36px;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1); line-height: 1.9;
-      font-size: 1rem;
-    }
-    .community-box strong { color: var(--blue-dark); }
+    .community-box{padding:32px 36px;line-height:2;font-size:1rem;color:var(--text);}
+    .community-box strong{color:var(--neon);}
 
     /* ── JOURNEY ── */
-    .journey-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-    @media (max-width: 600px) { .journey-grid { grid-template-columns: 1fr; } }
-    .journey-card {
-      background: white; border-radius: 22px; padding: 28px 26px;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-    }
-    .journey-card h3 { font-size: 1rem; margin-bottom: 14px; color: var(--blue-dark); }
-    .journey-card ul { padding-left: 18px; }
-    .journey-card li { font-size: 0.9rem; color: #4a6274; line-height: 1.8; }
+    .journey-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    @media(max-width:600px){.journey-grid{grid-template-columns:1fr;}}
+    .journey-card{padding:28px 26px;background:var(--card);border:1px solid var(--border);border-radius:22px;backdrop-filter:blur(16px);}
+    .journey-card h3{font-size:1rem;margin-bottom:14px;color:var(--neon);}
+    .journey-card ul{padding-left:18px;}
+    .journey-card li{font-size:0.9rem;color:var(--text2);line-height:1.8;}
 
     /* ── GOALS ── */
-    .goals-list { display: flex; flex-direction: column; gap: 14px; }
-    .goal-item {
-      background: white; border-radius: 16px; padding: 18px 24px;
-      box-shadow: 0 4px 18px rgba(0,119,182,0.08);
-      display: flex; align-items: flex-start; gap: 14px;
-      transition: transform 0.25s;
+    .goals-list{display:flex;flex-direction:column;gap:14px;}
+    .goal-item{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:20px 26px;backdrop-filter:blur(16px);
+      display:flex;align-items:flex-start;gap:14px;
+      transition:transform 0.25s,border-color 0.25s;
     }
-    .goal-item:hover { transform: translateX(6px); }
-    .goal-icon { font-size: 1.6rem; flex-shrink: 0; }
-    .goal-item p { font-size: 0.95rem; color: #4a6274; line-height: 1.7; }
+    .goal-item:hover{transform:translateX(8px);border-color:rgba(0,229,255,0.4);}
+    .goal-icon{font-size:1.6rem;flex-shrink:0;filter:drop-shadow(0 0 8px var(--glow));}
+    .goal-item p{font-size:0.95rem;color:var(--text2);line-height:1.7;}
+
+    /* ── FINANCIALS ── */
+    .costs-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+    .cost-box{padding:28px 26px;}
+    .cost-box h3{color:var(--neon);font-size:1rem;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+    .cost-row{display:flex;justify-content:space-between;font-size:0.87rem;padding:7px 0;color:var(--text2);border-bottom:1px solid rgba(255,255,255,0.04);}
+    .cost-row.total{font-weight:700;color:var(--neon);border-bottom:none;margin-top:10px;font-size:0.95rem;}
 
     /* ── CHARITY ── */
-    .charity-box {
-      background: white; border-radius: 22px; padding: 32px 36px;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
-      display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
-    }
-    .charity-icon { font-size: 4rem; flex-shrink: 0; }
-    .charity-box h3 { font-size: 1.2rem; color: var(--blue-dark); margin-bottom: 10px; }
-    .charity-box p { font-size: 0.95rem; color: #4a6274; line-height: 1.8; }
+    .charity-box{padding:32px 36px;display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;}
+    .charity-icon{font-size:4rem;flex-shrink:0;filter:drop-shadow(0 0 16px rgba(0,229,255,0.5));}
+    .charity-box h3{font-size:1.2rem;color:var(--neon);margin-bottom:10px;}
+    .charity-box p{font-size:0.95rem;color:var(--text2);line-height:1.8;}
 
     /* ── GAME ── */
-    .game-wrap {
-      background: white; border-radius: 24px; padding: 32px;
-      box-shadow: 0 8px 32px rgba(0,119,182,0.12); text-align: center;
+    .game-wrap{padding:32px;text-align:center;}
+    .game-wrap>p{color:var(--text2);margin-bottom:20px;font-size:0.95rem;}
+    #game-score-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:0 4px;}
+    #game-score-bar span{font-weight:700;color:var(--neon);font-size:1rem;}
+    #game-area{
+      position:relative;width:100%;height:340px;border-radius:18px;overflow:hidden;
+      cursor:pointer;user-select:none;
+      background:linear-gradient(180deg,#001f3f 0%,#003d6b 40%,#0077b6 70%,#005f8e 100%);
+      border:1px solid var(--border);
+      box-shadow:inset 0 0 60px rgba(0,229,255,0.05);
     }
-    .game-wrap p { color: #4a6274; margin-bottom: 20px; font-size: 0.95rem; }
-    #game-area {
-      position: relative; width: 100%; height: 340px;
-      background: linear-gradient(180deg, #caf0f8 0%, #90e0ef 50%, #48cae4 100%);
-      border-radius: 18px; overflow: hidden; cursor: pointer;
-      user-select: none;
+    #game-ocean-floor{
+      position:absolute;bottom:0;left:0;width:100%;height:60px;
+      background:linear-gradient(180deg,#004e7c,#002a44);
     }
-    #game-ocean-floor {
-      position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
-      background: linear-gradient(180deg, #0096c7, #005f8e);
-      border-radius: 0 0 18px 18px;
+    .falling-item{
+      position:absolute;top:-60px;font-size:2rem;cursor:pointer;
+      transition:transform 0.1s;filter:drop-shadow(0 4px 8px rgba(0,229,255,0.3));
     }
-    .falling-item {
-      position: absolute; top: -60px; font-size: 2rem;
-      cursor: pointer; transition: transform 0.1s;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
-      animation: none;
+    .falling-item:hover{transform:scale(1.3) rotate(10deg);}
+    #game-msg{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      background:rgba(2,13,26,0.9);border:1px solid var(--border);
+      border-radius:16px;padding:20px 32px;
+      font-weight:700;font-size:1.1rem;color:var(--neon);
+      pointer-events:none;opacity:0;transition:opacity 0.3s;text-align:center;
+      box-shadow:0 0 30px rgba(0,229,255,0.2);backdrop-filter:blur(12px);
     }
-    .falling-item:hover { transform: scale(1.2); }
-    #game-score-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 16px; padding: 0 4px;
+    #game-msg.show{opacity:1;}
+    #start-btn{
+      margin-top:18px;padding:13px 38px;
+      background:linear-gradient(135deg,var(--neon2),var(--neon));
+      color:#000d1a;border:none;border-radius:50px;
+      font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:1px;
+      box-shadow:0 0 30px var(--glow);transition:transform 0.2s,box-shadow 0.2s;
     }
-    #game-score-bar span { font-weight: 700; color: var(--blue-dark); font-size: 1rem; }
-    #game-msg {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.9); border-radius: 16px;
-      padding: 20px 32px; font-weight: 700; font-size: 1.1rem;
-      color: var(--blue-dark); pointer-events: none;
-      opacity: 0; transition: opacity 0.3s; text-align: center;
-      box-shadow: 0 4px 20px rgba(0,119,182,0.2);
-    }
-    #game-msg.show { opacity: 1; }
-    #start-btn {
-      margin-top: 18px; padding: 12px 36px;
-      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
-      color: white; border: none; border-radius: 50px;
-      font-size: 1rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0,119,182,0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    #start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,119,182,0.4); }
-    #sdg-badge {
-      display: inline-block; margin-top: 16px;
-      background: #e8f5e9; border: 2px solid #66bb6a;
-      border-radius: 10px; padding: 6px 16px;
-      color: #2e7d32; font-size: 0.82rem; font-weight: 600;
+    #start-btn:hover{transform:translateY(-3px);box-shadow:0 0 50px var(--glow);}
+    #sdg-badge{
+      display:inline-block;margin-top:16px;
+      background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.25);
+      border-radius:10px;padding:7px 18px;
+      color:var(--neon);font-size:0.82rem;font-weight:600;
     }
 
     /* ── SOURCES ── */
-    .sources-list { display: flex; flex-direction: column; gap: 12px; }
-    .source-item {
-      background: white; border-radius: 14px; padding: 16px 22px;
-      box-shadow: 0 4px 14px rgba(0,119,182,0.07);
-      font-size: 0.85rem; color: #4a6274; line-height: 1.7;
-      border-left: 4px solid var(--blue-light);
+    .sources-list{display:flex;flex-direction:column;gap:12px;}
+    .source-item{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:16px 22px;backdrop-filter:blur(12px);
+      font-size:0.85rem;color:var(--text2);line-height:1.7;
+      border-left:4px solid rgba(0,229,255,0.4);
+      transition:border-color 0.2s,transform 0.2s;
     }
-    .source-item strong { color: var(--blue-dark); display: block; margin-bottom: 4px; }
+    .source-item:hover{border-left-color:var(--neon);transform:translateX(4px);}
+    .source-item strong{color:var(--neon);display:block;margin-bottom:4px;}
+
+    /* ── CONTACT ── */
+    .contact-outer{
+      background:linear-gradient(160deg,var(--bg) 0%,#001f3f 50%,#003d6b 100%);
+      padding:90px 24px;position:relative;overflow:hidden;
+    }
+    .contact-outer::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,0.06),transparent 70%);
+    }
+    .contact-inner{max-width:620px;margin:0 auto;text-align:center;position:relative;z-index:2;}
+    .contact-inner h2{
+      font-size:2rem;font-weight:900;margin-bottom:16px;
+      background:linear-gradient(135deg,#fff,var(--neon));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      filter:drop-shadow(0 0 16px var(--glow));
+    }
+    .contact-inner p{color:rgba(255,255,255,0.8);font-size:1.05rem;line-height:1.9;}
+    .contact-note{
+      display:inline-block;margin-top:18px;
+      background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);
+      border-radius:10px;padding:9px 20px;
+      color:rgba(0,229,255,0.7);font-size:0.82rem;backdrop-filter:blur(8px);
+    }
+    .contact-btn{
+      display:inline-block;margin-top:30px;
+      background:linear-gradient(135deg,var(--neon2),var(--neon));
+      color:#000d1a;font-weight:900;font-size:1.05rem;
+      padding:16px 48px;border-radius:50px;text-decoration:none;
+      box-shadow:0 0 40px var(--glow),0 10px 30px rgba(0,0,0,0.3);
+      transition:transform 0.25s,box-shadow 0.25s;letter-spacing:1px;
+    }
+    .contact-btn:hover{transform:translateY(-5px);box-shadow:0 0 60px var(--glow),0 20px 44px rgba(0,0,0,0.4);}
+
+    /* ── FOOTER ── */
+    footer{
+      text-align:center;padding:28px 20px;
+      font-size:0.82rem;color:rgba(0,229,255,0.4);
+      background:var(--bg);border-top:1px solid rgba(0,229,255,0.08);
+    }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav>
-    <div class="nav-logo">
-      <img src="logo.png" alt="PikaThrift" />
-      <span>PikaThrift</span>
-    </div>
-    <div class="nav-links">
-      <a href="#mission">Mission</a>
-      <a href="#problem">The Problem</a>
-      <a href="#how">How It Works</a>
-      <a href="#team">Team</a>
-      <a href="#financials">Financials</a>
-      <a href="#charity">Charity</a>
-      <a href="#contact">Contact</a>
-    </div>
-  </nav>
+<div id="cursor-glow"></div>
 
-  <!-- HERO -->
-  <div class="hero">
-    <canvas id="stars-canvas"></canvas>
-    <div class="bubbles">
-      <div class="bubble"></div><div class="bubble"></div>
-      <div class="bubble"></div><div class="bubble"></div>
-      <div class="bubble"></div><div class="bubble"></div>
-      <div class="bubble"></div><div class="bubble"></div>
-      <div class="bubble"></div><div class="bubble"></div>
-    </div>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="logo.png" alt="PikaThrift"/>
+    <span>PikaThrift</span>
+  </div>
+  <div class="nav-links">
+    <a href="#mission">Mission</a>
+    <a href="#problem">Problem</a>
+    <a href="#how">How It Works</a>
+    <a href="#team">Team</a>
+    <a href="#financials">Financials</a>
+    <a href="#game">Game</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
 
-    <div class="hero-content">
-      <div class="logo-ring">
-        <img src="logo.png" alt="PikaThrift Logo" class="hero-logo" />
-      </div>
-      <h1>PikaThrift</h1>
-      <p class="tagline">Cleaning oceans. Clothing communities.<br>One pound at a time.</p>
-      <div class="badge">🌊 Student-Run Non-Profit Beach Cleanup</div>
-      <br />
-      <a href="#mission" class="hero-btn">Learn More ↓</a>
+<!-- HERO -->
+<div class="hero">
+  <canvas id="ocean-canvas"></canvas>
+  <div class="hero-content">
+    <div class="logo-wrap">
+      <div class="ring ring1"></div>
+      <div class="ring ring2"></div>
+      <div class="ring ring3"></div>
+      <img src="logo.png" alt="PikaThrift Logo" class="hero-logo"/>
     </div>
+    <h1>PikaThrift</h1>
+    <p class="tagline">Cleaning oceans. Clothing communities.<br>One pound at a time.</p>
+    <div class="badge">🌊 Student-Run Non-Profit Beach Cleanup</div>
+    <br/>
+    <a href="#mission" class="hero-btn">Dive In ↓</a>
+  </div>
+</div>
 
-    <div class="waves-container">
-      <svg class="wave-svg wave1" viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="60">
-        <path d="M0,30 C180,60 360,0 540,30 C720,60 900,0 1080,30 C1260,60 1380,10 1440,30 L1440,60 L0,60Z"/>
-      </svg>
-      <svg class="wave-svg wave2" viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="60" style="bottom:4px;">
-        <path d="M0,20 C200,50 400,0 600,25 C800,50 1000,5 1200,25 C1350,40 1400,15 1440,20 L1440,60 L0,60Z"/>
-      </svg>
-      <svg class="wave-svg wave3" viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="60" style="bottom:8px;">
-        <path d="M0,40 C240,10 480,50 720,30 C960,10 1200,50 1440,30 L1440,60 L0,60Z"/>
-      </svg>
-      <div class="wave-spacer"></div>
+<!-- BG WRAPPER -->
+<div class="section-wrap">
+
+<!-- MISSION -->
+<section id="mission">
+  <h2>🎯 Our Mission</h2>
+  <div class="mission-box glass reveal">
+    PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches
+    before it reaches the ocean, <strong>washes and sorts</strong> every item, then sells clean clothing
+    <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes.
+    Every dollar we earn goes right back into more cleanups.
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
+<section id="problem">
+  <h2>⚠️ The Problem</h2>
+  <div class="stat-grid">
+    <div class="stat-card reveal"><div class="stat-num">1%</div><div class="stat-label">of all textiles are actually recycled</div></div>
+    <div class="stat-card reveal"><div class="stat-num">35%</div><div class="stat-label">of ocean microplastics come from synthetic textiles</div></div>
+    <div class="stat-card reveal"><div class="stat-num">25%</div><div class="stat-label">of new garments go unsold due to overproduction</div></div>
+    <div class="stat-card reveal"><div class="stat-num">1.4M</div><div class="stat-label">trillion microfibres currently in our oceans</div></div>
+  </div>
+  <div class="quote-block reveal">
+    "It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."
+    <cite>— Fashion Revolution</cite>
+  </div>
+  <div class="quote-block reveal" style="margin-top:14px;">
+    The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people constantly throw away old clothes to keep up with trends — sending more textile waste into our oceans.
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <h2>⚙️ How It Works</h2>
+  <div class="steps">
+    <div class="step reveal"><span class="icon">🌊</span><h3>Step 1 — Collect</h3><p>Volunteers use nets and bags to gather textile waste from beaches and coastal areas.</p></div>
+    <div class="step reveal"><span class="icon">🧺</span><h3>Step 2 — Clean</h3><p>Every item is washed, dried, and sorted by quality and size at the laundromat.</p></div>
+    <div class="step reveal"><span class="icon">🛍️</span><h3>Step 3 — Sell</h3><p>Clean, sorted clothing is sold affordably to local thrift shops for resale.</p></div>
+    <div class="step reveal"><span class="icon">♻️</span><h3>Step 4 — Repeat</h3><p>Every dollar earned is reinvested into more nets, more cleanups, and more impact.</p></div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<section id="numbers">
+  <h2>📊 By the Numbers</h2>
+  <div class="numbers-grid">
+    <div class="number-card reveal"><div class="num" data-target="440" data-suffix=" lb">0</div><div class="label">Clothes collected per month</div></div>
+    <div class="number-card reveal"><div class="num">5</div><div class="label">Volunteer goal to start</div></div>
+    <div class="number-card reveal"><div class="num" data-target="810" data-prefix="$">0</div><div class="label">Monthly revenue</div></div>
+    <div class="number-card reveal"><div class="num" data-target="200" data-prefix="$">0</div><div class="label">Monthly surplus reinvested</div></div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <h2>👥 Our Team</h2>
+  <div class="team-grid">
+    <div class="team-card reveal"><div class="team-avatar">LZ</div><h3>Leo Zaks</h3><div class="role">Head of Marketing &amp; Sales</div></div>
+    <div class="team-card reveal"><div class="team-avatar">EU</div><h3>Ela Unlu</h3><div class="role">Head of Marketing &amp; Sales</div></div>
+    <div class="team-card reveal"><div class="team-avatar">GB</div><h3>Gabriel Balucan</h3><div class="role">Head of Supply Chain</div></div>
+    <div class="team-card reveal"><div class="team-avatar">AA</div><h3>Arjun Anand</h3><div class="role">Leadership &amp; Management</div></div>
+  </div>
+  <div class="team-slogan reveal">💚 "We clean to make the Earth green."</div>
+</section>
+
+<!-- COMMUNITY -->
+<section id="community">
+  <h2>🤝 Our Community</h2>
+  <div class="community-box glass reveal">
+    Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups.
+    We grow through <strong>flyers and brochures</strong> that spread the word and invite more people to join.
+    Our volunteers are the backbone of PikaThrift — together we're building a movement that helps both <strong>people and the planet</strong>.
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey">
+  <h2>🛤️ Our Journey</h2>
+  <div class="journey-grid">
+    <div class="journey-card reveal"><h3>⚡ Challenges</h3><ul><li>Had to pivot from our original idea</li><li>Tough decisions about the logo</li><li>Editing 10-second and 30-second reels</li><li>Balancing acting, recording, and editing</li></ul></div>
+    <div class="journey-card reveal"><h3>🌟 Highlights</h3><ul><li>Recording our reels</li><li>Editing the final videos together</li><li>Acting and bringing the brand to life</li><li>Seeing the project come together</li></ul></div>
+  </div>
+</section>
+
+<!-- GOALS -->
+<section id="goals">
+  <h2>🚀 Our Goals</h2>
+  <div class="goals-list">
+    <div class="goal-item reveal"><div class="goal-icon">🌊</div><p>Get many volunteers and clean beaches of textile waste, giving clothes a second life while helping the ocean.</p></div>
+    <div class="goal-item reveal"><div class="goal-icon">📈</div><p>Grow PikaThrift into a recognized organization so our positive impact on the oceans keeps expanding.</p></div>
+    <div class="goal-item reveal"><div class="goal-icon">♻️</div><p>Reinvest every dollar into upgrading our operations and increasing our environmental impact.</p></div>
+  </div>
+</section>
+
+<!-- FINANCIALS -->
+<section id="financials">
+  <h2>💰 Financials</h2>
+  <div class="costs-wrap">
+    <div class="cost-box glass reveal">
+      <h3>Starting Costs</h3>
+      <div class="cost-row"><span>Nets (5 × $21.99)</span><span>$110</span></div>
+      <div class="cost-row"><span>Drying racks (2 × $11.99)</span><span>$24</span></div>
+      <div class="cost-row"><span>First month of operations</span><span>$610</span></div>
+      <div class="cost-row"><span>Starting donations</span><span>−$150</span></div>
+      <div class="cost-row total"><span>Funding needed</span><span>$594</span></div>
+    </div>
+    <div class="cost-box glass reveal">
+      <h3>Monthly Costs</h3>
+      <div class="cost-row"><span>Laundromat</span><span>$90</span></div>
+      <div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div>
+      <div class="cost-row"><span>Trash bags</span><span>$12</span></div>
+      <div class="cost-row"><span>Unsold inventory</span><span>$50</span></div>
+      <div class="cost-row"><span>CapCut Pro</span><span>$25</span></div>
+      <div class="cost-row"><span>Cloud Code</span><span>$20</span></div>
+      <div class="cost-row"><span>Transportation</span><span>$125</span></div>
+      <div class="cost-row"><span>Contingency</span><span>$273</span></div>
+      <div class="cost-row total"><span>Total</span><span>$610</span></div>
+    </div>
+    <div class="cost-box glass reveal">
+      <h3>Monthly Revenue</h3>
+      <div class="cost-row"><span>Sales (440 lb × $1.50)</span><span>$660</span></div>
+      <div class="cost-row"><span>Donations</span><span>$150</span></div>
+      <div class="cost-row total"><span>Total</span><span>$810</span></div>
+      <div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div>
+      <div class="cost-row"><span>Ongoing monthly surplus</span><span>$200</span></div>
     </div>
   </div>
+</section>
 
-  <!-- MISSION -->
-  <section id="mission">
-    <h2>🎯 Our Mission</h2>
-    <div class="mission-box reveal">
-      PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches
-      before it reaches the ocean, <strong>washes and sorts</strong> every item, then sells clean clothing
-      <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes.
-      Every dollar we earn goes right back into more cleanups.
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section id="how">
-    <h2>⚙️ How It Works</h2>
-    <div class="steps">
-      <div class="step reveal">
-        <span class="icon">🌊</span>
-        <h3>Step 1 — Collect</h3>
-        <p>Volunteers use nets and bags to gather textile waste from beaches and coastal areas.</p>
-      </div>
-      <div class="step reveal">
-        <span class="icon">🧺</span>
-        <h3>Step 2 — Clean</h3>
-        <p>Every item is washed, dried, and sorted by quality and size at the laundromat.</p>
-      </div>
-      <div class="step reveal">
-        <span class="icon">🛍️</span>
-        <h3>Step 3 — Sell</h3>
-        <p>Clean, sorted clothing is sold affordably to local thrift shops for resale.</p>
-      </div>
-      <div class="step reveal">
-        <span class="icon">♻️</span>
-        <h3>Step 4 — Repeat</h3>
-        <p>Every dollar earned is reinvested into more nets, more cleanups, and more impact.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- NUMBERS -->
-  <section id="numbers">
-    <h2>📊 By the Numbers</h2>
-    <div class="numbers-grid">
-      <div class="number-card reveal">
-        <div class="num" data-target="440" data-suffix=" lb">0</div>
-        <div class="label">Clothes collected per month</div>
-      </div>
-      <div class="number-card reveal">
-        <div class="num">5</div>
-        <div class="label">Volunteer goal to start</div>
-      </div>
-      <div class="number-card reveal">
-        <div class="num" data-target="810" data-prefix="$">0</div>
-        <div class="label">Monthly revenue</div>
-      </div>
-      <div class="number-card reveal">
-        <div class="num" data-target="200" data-prefix="$">0</div>
-        <div class="label">Monthly surplus reinvested</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FINANCIALS -->
-  <section id="financials">
-    <h2>💰 Financials</h2>
-    <div class="costs-wrap">
-      <div class="cost-box reveal">
-        <h3>Starting Costs</h3>
-        <div class="cost-row"><span>Nets (5 × $21.99)</span><span>$110</span></div>
-        <div class="cost-row"><span>Drying racks (2 × $11.99)</span><span>$24</span></div>
-        <div class="cost-row"><span>First month of operations</span><span>$610</span></div>
-        <div class="cost-row"><span>Starting donations</span><span>−$150</span></div>
-        <div class="cost-row total"><span>Funding needed</span><span>$594</span></div>
-      </div>
-      <div class="cost-box reveal">
-        <h3>Monthly Costs</h3>
-        <div class="cost-row"><span>Laundromat</span><span>$90</span></div>
-        <div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div>
-        <div class="cost-row"><span>Trash bags</span><span>$12</span></div>
-        <div class="cost-row"><span>Unsold inventory</span><span>$50</span></div>
-        <div class="cost-row"><span>CapCut Pro</span><span>$25</span></div>
-        <div class="cost-row"><span>Cloud Code</span><span>$20</span></div>
-        <div class="cost-row"><span>Transportation</span><span>$125</span></div>
-        <div class="cost-row"><span>Contingency</span><span>$273</span></div>
-        <div class="cost-row total"><span>Total</span><span>$610</span></div>
-      </div>
-      <div class="cost-box reveal">
-        <h3>Monthly Revenue</h3>
-        <div class="cost-row"><span>Sales (440 lb × $1.50)</span><span>$660</span></div>
-        <div class="cost-row"><span>Donations</span><span>$150</span></div>
-        <div class="cost-row total"><span>Total</span><span>$810</span></div>
-        <div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div>
-        <div class="cost-row"><span>Ongoing monthly surplus</span><span>$200</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- THE PROBLEM -->
-  <section id="problem">
-    <h2>⚠️ The Problem</h2>
-    <div class="stat-grid">
-      <div class="stat-card reveal">
-        <div class="stat-num">1%</div>
-        <div class="stat-label">of all textiles are actually recycled</div>
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-num">35%</div>
-        <div class="stat-label">of ocean microplastics come from synthetic textiles</div>
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-num">25%</div>
-        <div class="stat-label">of new garments go unsold due to overproduction</div>
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-num">1.4M</div>
-        <div class="stat-label">trillion microfibres currently in our oceans</div>
-      </div>
-    </div>
-    <div class="quote-block reveal">
-      "It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."
-      <cite>— Fashion Revolution</cite>
-    </div>
-    <div class="quote-block reveal" style="margin-top:14px;">
-      The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people buy clothes and constantly throw away old ones to keep up with trends — increasing the amount of textile waste that ends up in our oceans.
-    </div>
-  </section>
-
-  <!-- TEAM -->
-  <section id="team">
-    <h2>👥 Our Team</h2>
-    <div class="team-grid">
-      <div class="team-card reveal">
-        <div class="team-avatar">LZ</div>
-        <h3>Leo Zaks</h3>
-        <div class="role">Head of Marketing &amp; Sales</div>
-      </div>
-      <div class="team-card reveal">
-        <div class="team-avatar">EU</div>
-        <h3>Ela Unlu</h3>
-        <div class="role">Head of Marketing &amp; Sales</div>
-      </div>
-      <div class="team-card reveal">
-        <div class="team-avatar">GB</div>
-        <h3>Gabriel Balucan</h3>
-        <div class="role">Head of Supply Chain</div>
-      </div>
-      <div class="team-card reveal">
-        <div class="team-avatar">AA</div>
-        <h3>Arjun Anand</h3>
-        <div class="role">Leadership &amp; Management</div>
-      </div>
-    </div>
-    <div class="team-slogan reveal">
-      💚 "We clean to make the Earth green."
-    </div>
-  </section>
-
-  <!-- COMMUNITY -->
-  <section id="community">
-    <h2>🤝 Our Community</h2>
-    <div class="community-box reveal">
-      Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups.
-      We grow our community through <strong>flyers and brochures</strong> that spread the word and invite more people to join our mission.
-      <br /><br />
-      Our volunteers are the backbone of PikaThrift — they show up, pick up, and make a real difference.
-      Together, we're building a movement that helps both <strong>people and the planet</strong>.
-    </div>
-  </section>
-
-  <!-- OUR JOURNEY -->
-  <section id="journey">
-    <h2>🛤️ Our Journey</h2>
-    <div class="journey-grid">
-      <div class="journey-card reveal">
-        <h3>⚡ Challenges We Faced</h3>
-        <ul>
-          <li>Had to pivot from our original idea</li>
-          <li>Tough decisions about the logo design</li>
-          <li>Editing our 10-second and 30-second reels</li>
-          <li>Balancing acting, recording, and editing</li>
-        </ul>
-      </div>
-      <div class="journey-card reveal">
-        <h3>🌟 Highlights</h3>
-        <ul>
-          <li>Recording our 10-second and 30-second reels</li>
-          <li>Editing the final reels together</li>
-          <li>Acting and bringing the brand to life</li>
-          <li>Seeing the project come together</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- GOALS -->
-  <section id="goals">
-    <h2>🚀 Our Goals</h2>
-    <div class="goals-list">
-      <div class="goal-item reveal">
-        <div class="goal-icon">🌊</div>
-        <p>Get many volunteers and clean beaches of textile waste, giving clothes a second life while helping the ocean.</p>
-      </div>
-      <div class="goal-item reveal">
-        <div class="goal-icon">📈</div>
-        <p>Grow PikaThrift into a more popular and recognized organization so our positive impact on the oceans keeps expanding.</p>
-      </div>
-      <div class="goal-item reveal">
-        <div class="goal-icon">♻️</div>
-        <p>As we earn more, reinvest everything into upgrading our operations and increasing our environmental impact.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CHARITY -->
-  <section id="charity">
-    <h2>💙 Our Charity of Choice</h2>
-    <div class="charity-box reveal">
-      <div class="charity-icon">🌊</div>
-      <div>
-        <h3>Save Our Shores</h3>
-        <p>
-          Save Our Shores is a non-profit organization dedicated to saving marine habitats from plastic pollution, offshore oil drilling, and more.
-          They host regular beach cleanups to protect the ocean — just like us. We chose them as our charity of choice because our missions align:
-          cleaner beaches, healthier oceans, and a better planet for everyone.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- GAME -->
-  <section id="game">
-    <h2>🎮 Sort the Clothes!</h2>
-    <div class="game-wrap reveal">
-      <p>Clothes are falling into the ocean — click them before they hit the water to rescue them! Each rescued item = responsible consumption. 🌊</p>
-      <div id="game-score-bar">
-        <span>Score: <span id="score">0</span></span>
-        <span>Missed: <span id="missed">0</span>/5</span>
-        <span>Time: <span id="timer">30</span>s</span>
-      </div>
-      <div id="game-area">
-        <div id="game-ocean-floor"></div>
-        <div id="game-msg">Click to Start!</div>
-      </div>
-      <button id="start-btn">▶ Start Game</button>
-      <br />
-      <span id="sdg-badge">🎯 SDG 12: Responsible Consumption &amp; Production</span>
-    </div>
-  </section>
-
-  <!-- SOURCES -->
-  <section id="sources">
-    <h2>📚 Sources</h2>
-    <div class="sources-list">
-      <div class="source-item reveal">
-        <strong>National Library of Medicine (PMC)</strong>
-        "Sustainable Development Goals for Textiles and Fashion" — An official U.S. government website (Public Medical Central). Cited for textile recycling rates, overproduction, microplastics, and water consumption statistics.
-      </div>
-      <div class="source-item reveal">
-        <strong>Fashion Revolution</strong>
-        "What's In Our Clothes and How Does it Affect the Oceans?" — A non-profit organization focused on fashion and the environment that values people over profit and works to conserve and restore the environment. Cited for microfibre pollution statistics.
-      </div>
-      <div class="source-item reveal">
-        <strong>Marketplace</strong>
-        "What can clothing retailers do with all that excess inventory?" — A non-profit organization focused on raising public awareness about economics, tech, and more. Cited for the Burberry unsold merchandise statistic.
-      </div>
-      <div class="source-item reveal">
-        <strong>Goodwill</strong>
-        "What Is Goodwill's Diversion Rate From The Landfills?" — A non-profit organization focused on giving clothes a second life through donations. Referenced for context on textile diversion and resale.
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <div class="contact-outer" id="contact">
-    <div class="orb orb1"></div>
-    <div class="orb orb2"></div>
-    <div class="contact-inner reveal">
-      <h2>✉️ Get In Touch</h2>
-      <p>Interested in volunteering or partnering with us?<br />We'd love to hear from you!</p>
-      <div class="contact-note">📚 School project demo — not yet accepting payments or donations</div>
-      <br />
-      <a class="contact-btn" href="https://mail.google.com/mail/?view=cm&to=leo.zaks11@gmail.com" target="_blank">📧 Send Us an Email</a>
+<!-- CHARITY -->
+<section id="charity">
+  <h2>💙 Our Charity of Choice</h2>
+  <div class="charity-box glass reveal">
+    <div class="charity-icon">🌊</div>
+    <div>
+      <h3>Save Our Shores</h3>
+      <p>Save Our Shores is a non-profit dedicated to saving marine habitats from plastic pollution, offshore oil drilling, and more. They host beach cleanups just like us — we chose them because our missions align perfectly: cleaner beaches, healthier oceans, and a better planet.</p>
     </div>
   </div>
+</section>
 
-  <footer>
-    &copy; 2026 PikaThrift &mdash; A student non-profit dedicated to ocean cleanup and affordable clothing.
-  </footer>
+<!-- GAME -->
+<section id="game">
+  <h2>🎮 Sort the Clothes!</h2>
+  <div class="game-wrap glass reveal">
+    <p>Clothes are falling into the ocean — click them before they hit the water! 🌊 Miss 5 and it's over.</p>
+    <div id="game-score-bar">
+      <span>Score: <span id="score">0</span></span>
+      <span>Missed: <span id="missed">0</span>/5</span>
+      <span>Time: <span id="timer">30</span>s</span>
+    </div>
+    <div id="game-area">
+      <div id="game-ocean-floor"></div>
+      <div id="game-msg">Click Start to Play! 👕</div>
+    </div>
+    <button id="start-btn">▶ Start Game</button><br/>
+    <span id="sdg-badge">🎯 SDG 12: Responsible Consumption &amp; Production</span>
+  </div>
+</section>
 
-  <script>
-    // Starfield canvas
-    const canvas = document.getElementById('stars-canvas');
-    const ctx = canvas.getContext('2d');
-    let stars = [];
+<!-- SOURCES -->
+<section id="sources">
+  <h2>📚 Sources</h2>
+  <div class="sources-list">
+    <div class="source-item reveal"><strong>National Library of Medicine (PMC)</strong>"Sustainable Development Goals for Textiles and Fashion" — Official U.S. government website. Cited for textile recycling rates, overproduction, microplastics, and water consumption statistics.</div>
+    <div class="source-item reveal"><strong>Fashion Revolution</strong>"What's In Our Clothes and How Does it Affect the Oceans?" — Non-profit focused on fashion and the environment. Cited for microfibre pollution statistics.</div>
+    <div class="source-item reveal"><strong>Marketplace</strong>"What can clothing retailers do with all that excess inventory?" — Non-profit raising public awareness about economics and tech. Cited for the Burberry unsold merchandise statistic.</div>
+    <div class="source-item reveal"><strong>Goodwill</strong>"What Is Goodwill's Diversion Rate From The Landfills?" — Non-profit focused on giving clothes a second life. Referenced for textile diversion and resale context.</div>
+  </div>
+</section>
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+</div><!-- end section-wrap -->
+
+<!-- CONTACT -->
+<div class="contact-outer" id="contact">
+  <div class="contact-inner reveal">
+    <h2>✉️ Get In Touch</h2>
+    <p>Interested in volunteering or partnering with us?<br/>We'd love to hear from you!</p>
+    <div class="contact-note">📚 School project demo — not yet accepting payments or donations</div><br/>
+    <a class="contact-btn" href="https://mail.google.com/mail/?view=cm&to=leo.zaks11@gmail.com" target="_blank">📧 Send Us an Email</a>
+  </div>
+</div>
+
+<footer>&copy; 2026 PikaThrift &mdash; A student non-profit dedicated to ocean cleanup and affordable clothing.</footer>
+
+<script>
+// ── CURSOR GLOW ──
+const glow = document.getElementById('cursor-glow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top  = e.clientY + 'px';
+});
+
+// ── OCEAN CANVAS HERO ──
+const canvas = document.getElementById('ocean-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, fish = [], bubbles = [], rays = [];
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  initScene();
+}
+
+function initScene() {
+  fish = Array.from({length: 12}, () => ({
+    x: Math.random() * W,
+    y: 60 + Math.random() * (H * 0.55),
+    size: 8 + Math.random() * 14,
+    speed: 0.4 + Math.random() * 0.8,
+    dir: Math.random() > 0.5 ? 1 : -1,
+    col: `hsl(${185 + Math.random()*30}, 80%, ${55 + Math.random()*20}%)`,
+    wave: Math.random() * Math.PI * 2,
+    waveSpeed: 0.02 + Math.random() * 0.02
+  }));
+  bubbles = Array.from({length: 30}, () => ({
+    x: Math.random() * W,
+    y: H * 0.3 + Math.random() * H * 0.7,
+    r: 2 + Math.random() * 6,
+    speed: 0.4 + Math.random() * 0.8,
+    alpha: 0.2 + Math.random() * 0.5,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.02 + Math.random() * 0.03
+  }));
+  rays = Array.from({length: 6}, () => ({
+    x: Math.random() * W,
+    angle: -0.15 + Math.random() * 0.3,
+    width: 30 + Math.random() * 60,
+    alpha: 0.02 + Math.random() * 0.04,
+    speed: 0.003 + Math.random() * 0.003,
+    phase: Math.random() * Math.PI * 2
+  }));
+}
+
+function drawFish(f) {
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  if (f.dir < 0) ctx.scale(-1, 1);
+  ctx.fillStyle = f.col;
+  ctx.shadowColor = f.col;
+  ctx.shadowBlur = 10;
+  // Body
+  ctx.beginPath();
+  ctx.ellipse(0, 0, f.size, f.size * 0.55, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(-f.size * 0.9, 0);
+  ctx.lineTo(-f.size * 1.6, -f.size * 0.6);
+  ctx.lineTo(-f.size * 1.6,  f.size * 0.6);
+  ctx.closePath();
+  ctx.fill();
+  // Eye
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.beginPath();
+  ctx.arc(f.size * 0.5, -f.size * 0.1, f.size * 0.15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+let t = 0;
+function draw() {
+  t += 0.01;
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky-to-ocean gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0,   '#001020');
+  grad.addColorStop(0.3, '#001f3f');
+  grad.addColorStop(0.7, '#003d6b');
+  grad.addColorStop(1,   '#004e7c');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Light rays from surface
+  rays.forEach(r => {
+    r.phase += r.speed;
+    const alpha = r.alpha * (0.6 + 0.4 * Math.sin(r.phase));
+    const grad2 = ctx.createLinearGradient(r.x, 0, r.x + Math.tan(r.angle) * H, H);
+    grad2.addColorStop(0,   `rgba(100,220,255,${alpha})`);
+    grad2.addColorStop(1,   'rgba(100,220,255,0)');
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(r.x - r.width/2, 0);
+    ctx.lineTo(r.x + r.width/2, 0);
+    ctx.lineTo(r.x + r.width/2 + Math.tan(r.angle)*H, H);
+    ctx.lineTo(r.x - r.width/2 + Math.tan(r.angle)*H, H);
+    ctx.closePath();
+    ctx.fillStyle = grad2;
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Bubbles
+  bubbles.forEach(b => {
+    b.wobble += b.wobbleSpeed;
+    b.y -= b.speed;
+    b.x += Math.sin(b.wobble) * 0.5;
+    if (b.y < -10) { b.y = H + 10; b.x = Math.random() * W; }
+    ctx.save();
+    ctx.globalAlpha = b.alpha;
+    ctx.strokeStyle = 'rgba(100,220,255,0.8)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(100,220,255,0.08)';
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Fish
+  fish.forEach(f => {
+    f.wave += f.waveSpeed;
+    f.x += f.speed * f.dir;
+    f.y += Math.sin(f.wave) * 0.4;
+    if (f.x > W + 60)  { f.x = -60;  f.dir = 1;  }
+    if (f.x < -60)     { f.x = W+60; f.dir = -1; }
+    drawFish(f);
+  });
+
+  // Surface shimmer waves
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.28 + i * 8);
+    for (let x = 0; x < W; x += 4) {
+      const y = H * 0.28 + i * 8 + Math.sin(x * 0.008 + t * (1 + i * 0.3)) * (10 - i * 3);
+      ctx.lineTo(x, y);
     }
+    ctx.strokeStyle = `rgba(100,220,255,${0.08 - i * 0.02})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
 
-    function initStars() {
-      stars = [];
-      for (let i = 0; i < 120; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 1.8 + 0.3,
-          alpha: Math.random(),
-          speed: Math.random() * 0.004 + 0.002,
-          phase: Math.random() * Math.PI * 2
-        });
+  // Bottom wave fill
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 4) {
+    const y = H * 0.75 + Math.sin(x * 0.006 + t * 0.8) * 15 + Math.sin(x * 0.012 - t) * 8;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  const seaGrad = ctx.createLinearGradient(0, H * 0.7, 0, H);
+  seaGrad.addColorStop(0, 'rgba(0,50,90,0.0)');
+  seaGrad.addColorStop(1, 'rgba(0,20,40,0.8)');
+  ctx.fillStyle = seaGrad;
+  ctx.fill();
+
+  requestAnimationFrame(draw);
+}
+
+resize();
+window.addEventListener('resize', resize);
+requestAnimationFrame(draw);
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const num = e.target.querySelector ? e.target.querySelector('[data-target]') : null;
+      if (num && !num.dataset.counted) { num.dataset.counted = '1'; animateCount(num); }
+    }
+  });
+}, {threshold: 0.12});
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function animateCount(el) {
+  const target = +el.dataset.target;
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+  const start = performance.now();
+  (function update(now) {
+    const t = Math.min((now - start) / 1400, 1);
+    const e = 1 - Math.pow(1 - t, 3);
+    el.textContent = prefix + Math.round(e * target).toLocaleString() + suffix;
+    if (t < 1) requestAnimationFrame(update);
+  })(performance.now());
+}
+
+// ── 3D CARD TILT ──
+document.querySelectorAll('.glass').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width  - 0.5;
+    const y = (e.clientY - r.top)  / r.height - 0.5;
+    card.style.transform = `perspective(600px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateY(-6px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+// ── CLICK RIPPLE ──
+document.addEventListener('click', e => {
+  const ripple = document.createElement('div');
+  Object.assign(ripple.style, {
+    position: 'fixed',
+    left: e.clientX - 20 + 'px',
+    top:  e.clientY - 20 + 'px',
+    width: '40px', height: '40px',
+    borderRadius: '50%',
+    border: '2px solid rgba(0,229,255,0.6)',
+    pointerEvents: 'none',
+    zIndex: '9998',
+    animation: 'none',
+    transform: 'scale(0)',
+    opacity: '1',
+    transition: 'transform 0.5s ease, opacity 0.5s ease',
+  });
+  document.body.appendChild(ripple);
+  requestAnimationFrame(() => {
+    ripple.style.transform = 'scale(4)';
+    ripple.style.opacity = '0';
+  });
+  setTimeout(() => ripple.remove(), 600);
+});
+
+// ── GAME ──
+const ITEMS = ['👕','👗','👖','🧥','👔','🧣','🧤','👒','🩱','🧦'];
+const BAD   = ['🗑️','💀','🐟'];
+let gameScore = 0, gameMissed = 0, gameTime = 30, gameRunning = false;
+let spawnInterval, timerInterval;
+const scoreEl = document.getElementById('score');
+const missedEl = document.getElementById('missed');
+const timerEl  = document.getElementById('timer');
+const msgEl    = document.getElementById('game-msg');
+const startBtn = document.getElementById('start-btn');
+const area     = document.getElementById('game-area');
+
+function showMsg(text, dur = 1200) {
+  msgEl.innerHTML = text; msgEl.classList.add('show');
+  setTimeout(() => msgEl.classList.remove('show'), dur);
+}
+
+function spawnItem() {
+  const isCloth = Math.random() > 0.25;
+  const pool  = isCloth ? ITEMS : BAD;
+  const emoji = pool[Math.floor(Math.random() * pool.length)];
+  const el = document.createElement('div');
+  el.className = 'falling-item';
+  el.textContent = emoji;
+  el.style.left = (8 + Math.random() * 80) + '%';
+  el.style.top  = '-50px';
+  el.addEventListener('click', () => {
+    if (!gameRunning) return;
+    if (isCloth) { gameScore++; scoreEl.textContent = gameScore; showMsg('♻️ Saved! +1', 500); }
+    else         { showMsg("❌ That's trash!", 500); }
+    el.remove();
+  });
+  area.appendChild(el);
+  let pos = -50;
+  const speed = 1.3 + Math.random() * 1.5;
+  const fall = setInterval(() => {
+    if (!gameRunning) { clearInterval(fall); el.remove(); return; }
+    pos += speed; el.style.top = pos + 'px';
+    if (pos > area.clientHeight - 65) {
+      clearInterval(fall);
+      if (isCloth && el.parentNode) {
+        gameMissed++; missedEl.textContent = gameMissed;
+        showMsg('🌊 Hit the ocean!', 700);
+        if (gameMissed >= 5) endGame();
       }
+      el.remove();
     }
+  }, 16);
+}
 
-    function drawStars(t) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      stars.forEach(s => {
-        const a = 0.3 + 0.5 * Math.sin(s.phase + t * s.speed * 60);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,235,255,${a})`;
-        ctx.fill();
-      });
-      requestAnimationFrame(drawStars);
-    }
+function startGame() {
+  gameScore = gameMissed = 0; gameTime = 30; gameRunning = true;
+  scoreEl.textContent = missedEl.textContent = 0;
+  timerEl.textContent = 30;
+  startBtn.textContent = '⏹ Running...'; startBtn.disabled = true;
+  area.querySelectorAll('.falling-item').forEach(e => e.remove());
+  spawnInterval = setInterval(spawnItem, 850);
+  timerInterval = setInterval(() => { timerEl.textContent = --gameTime; if (gameTime <= 0) endGame(); }, 1000);
+}
 
-    resizeCanvas();
-    initStars();
-    requestAnimationFrame(drawStars);
-    window.addEventListener('resize', () => { resizeCanvas(); initStars(); });
+function endGame() {
+  gameRunning = false;
+  clearInterval(spawnInterval); clearInterval(timerInterval);
+  area.querySelectorAll('.falling-item').forEach(e => e.remove());
+  startBtn.disabled = false; startBtn.textContent = '▶ Play Again';
+  const msg = gameScore >= 20 ? `🏆 Amazing! ${gameScore} clothes rescued!` :
+              gameScore >= 10 ? `🌊 Great! ${gameScore} clothes saved!` :
+                                `♻️ ${gameScore} saved — try again!`;
+  showMsg(msg, 3000);
+}
 
-    // ── CLOTHING SORT GAME ──
-    const ITEMS = ['👕','👗','👖','🧥','👔','🧣','🧤','👒','🩱','🧦'];
-    const BAD =   ['🗑️','💀','🐟'];
-    let gameScore = 0, gameMissed = 0, gameTime = 30;
-    let gameRunning = false, gameInterval, timerInterval, spawnInterval;
-
-    const area   = document.getElementById('game-area');
-    const scoreEl = document.getElementById('score');
-    const missedEl = document.getElementById('missed');
-    const timerEl  = document.getElementById('timer');
-    const msgEl    = document.getElementById('game-msg');
-    const startBtn = document.getElementById('start-btn');
-
-    function showMsg(text, duration = 1200) {
-      msgEl.innerHTML = text;
-      msgEl.classList.add('show');
-      setTimeout(() => msgEl.classList.remove('show'), duration);
-    }
-
-    function spawnItem() {
-      const isClothing = Math.random() > 0.25;
-      const pool = isClothing ? ITEMS : BAD;
-      const emoji = pool[Math.floor(Math.random() * pool.length)];
-      const el = document.createElement('div');
-      el.className = 'falling-item';
-      el.textContent = emoji;
-      el.style.left = (8 + Math.random() * 80) + '%';
-      el.style.top = '-50px';
-      el.dataset.clothing = isClothing;
-
-      el.addEventListener('click', () => {
-        if (!gameRunning) return;
-        if (isClothing) {
-          gameScore++;
-          scoreEl.textContent = gameScore;
-          showMsg('♻️ Rescued! +1', 600);
-        } else {
-          showMsg('❌ That\'s trash!', 600);
-        }
-        el.remove();
-      });
-
-      area.appendChild(el);
-
-      let pos = -50;
-      const speed = 1.2 + Math.random() * 1.4;
-      const fall = setInterval(() => {
-        if (!gameRunning) { clearInterval(fall); el.remove(); return; }
-        pos += speed;
-        el.style.top = pos + 'px';
-        if (pos > area.clientHeight - 65) {
-          clearInterval(fall);
-          if (isClothing && el.parentNode) {
-            gameMissed++;
-            missedEl.textContent = gameMissed;
-            showMsg('🌊 It hit the ocean!', 700);
-            if (gameMissed >= 5) endGame();
-          }
-          el.remove();
-        }
-      }, 16);
-    }
-
-    function startGame() {
-      gameScore = 0; gameMissed = 0; gameTime = 30;
-      gameRunning = true;
-      scoreEl.textContent = 0;
-      missedEl.textContent = 0;
-      timerEl.textContent = 30;
-      startBtn.textContent = '⏹ Running...';
-      startBtn.disabled = true;
-      area.querySelectorAll('.falling-item').forEach(e => e.remove());
-
-      spawnInterval = setInterval(spawnItem, 900);
-      timerInterval = setInterval(() => {
-        gameTime--;
-        timerEl.textContent = gameTime;
-        if (gameTime <= 0) endGame();
-      }, 1000);
-    }
-
-    function endGame() {
-      gameRunning = false;
-      clearInterval(spawnInterval);
-      clearInterval(timerInterval);
-      area.querySelectorAll('.falling-item').forEach(e => e.remove());
-      startBtn.disabled = false;
-      startBtn.textContent = '▶ Play Again';
-      const msg = gameScore >= 20 ? `🏆 Amazing! ${gameScore} clothes saved!` :
-                  gameScore >= 10 ? `🌊 Great job! ${gameScore} clothes rescued!` :
-                                    `♻️ ${gameScore} saved. Try again!`;
-      showMsg(msg, 3000);
-    }
-
-    startBtn.addEventListener('click', startGame);
-    showMsg('Click Start to Play! 👕', 99999);
-
-    // ── SCROLL REVEAL ──
-    // Scroll reveal
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-          const num = e.target.querySelector('[data-target]');
-          if (num && !num.dataset.counted) {
-            num.dataset.counted = '1';
-            animateCount(num);
-          }
-          // Also check if the element itself is a number card
-          if (e.target.dataset && e.target.dataset.target) {
-            if (!e.target.dataset.counted) {
-              e.target.dataset.counted = '1';
-              animateCount(e.target);
-            }
-          }
-        }
-      });
-    }, { threshold: 0.15 });
-
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-    // Animate counters
-    function animateCount(el) {
-      const target = +el.dataset.target;
-      const prefix = el.dataset.prefix || '';
-      const suffix = el.dataset.suffix || '';
-      const duration = 1400;
-      const start = performance.now();
-      function update(now) {
-        const t = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = prefix + Math.round(eased * target).toLocaleString() + suffix;
-        if (t < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-  </script>
+startBtn.addEventListener('click', startGame);
+showMsg('Click Start to Play! 👕', 99999);
+</script>
 </body>
 </html>
