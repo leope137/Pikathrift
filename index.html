@@ -391,6 +391,103 @@
     /* Section dividers */
     .wave-divider { width: 100%; overflow: hidden; line-height: 0; background: var(--bg); }
     .wave-divider svg { display: block; }
+
+    /* ── STAT CARDS (The Problem) ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .stat-card {
+      background: white; border-radius: 22px; padding: 28px 22px; text-align: center;
+      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
+      border-bottom: 5px solid var(--blue-mid);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-8px); box-shadow: 0 20px 44px rgba(0,119,182,0.18); }
+    .stat-card .stat-num { font-size: 2.4rem; font-weight: 900; color: var(--blue-dark); }
+    .stat-card .stat-label { font-size: 0.85rem; color: #4a6274; margin-top: 8px; line-height: 1.5; }
+    .quote-block {
+      background: linear-gradient(135deg, #eaf6fc, #d0eef9);
+      border-left: 5px solid var(--blue-mid);
+      border-radius: 16px; padding: 22px 28px;
+      margin-top: 20px; font-size: 0.95rem; line-height: 1.85;
+      color: #2a4a5e;
+    }
+    .quote-block cite { display: block; margin-top: 10px; font-style: normal; font-weight: 700; color: var(--blue-dark); font-size: 0.82rem; }
+
+    /* ── TEAM ── */
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 22px; }
+    .team-card {
+      background: white; border-radius: 22px; padding: 32px 20px;
+      text-align: center; box-shadow: 0 8px 32px rgba(0,119,182,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .team-card:hover { transform: translateY(-8px); box-shadow: 0 20px 44px rgba(0,119,182,0.18); }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin: 0 auto 16px;
+      box-shadow: 0 6px 20px rgba(0,119,182,0.25);
+    }
+    .team-card h3 { font-size: 1rem; color: #1a2e3b; margin-bottom: 6px; }
+    .team-card .role { font-size: 0.82rem; color: var(--blue-dark); font-weight: 600; }
+    .team-slogan {
+      text-align: center; margin-top: 28px;
+      font-size: 1.2rem; font-weight: 800;
+      color: var(--blue-dark); letter-spacing: 1px;
+      padding: 20px; background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,119,182,0.1);
+      border: 2px dashed var(--blue-light);
+    }
+
+    /* ── COMMUNITY ── */
+    .community-box {
+      background: white; border-radius: 22px; padding: 32px 36px;
+      box-shadow: 0 8px 32px rgba(0,119,182,0.1); line-height: 1.9;
+      font-size: 1rem;
+    }
+    .community-box strong { color: var(--blue-dark); }
+
+    /* ── JOURNEY ── */
+    .journey-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    @media (max-width: 600px) { .journey-grid { grid-template-columns: 1fr; } }
+    .journey-card {
+      background: white; border-radius: 22px; padding: 28px 26px;
+      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
+    }
+    .journey-card h3 { font-size: 1rem; margin-bottom: 14px; color: var(--blue-dark); }
+    .journey-card ul { padding-left: 18px; }
+    .journey-card li { font-size: 0.9rem; color: #4a6274; line-height: 1.8; }
+
+    /* ── GOALS ── */
+    .goals-list { display: flex; flex-direction: column; gap: 14px; }
+    .goal-item {
+      background: white; border-radius: 16px; padding: 18px 24px;
+      box-shadow: 0 4px 18px rgba(0,119,182,0.08);
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: transform 0.25s;
+    }
+    .goal-item:hover { transform: translateX(6px); }
+    .goal-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .goal-item p { font-size: 0.95rem; color: #4a6274; line-height: 1.7; }
+
+    /* ── CHARITY ── */
+    .charity-box {
+      background: white; border-radius: 22px; padding: 32px 36px;
+      box-shadow: 0 8px 32px rgba(0,119,182,0.1);
+      display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .charity-icon { font-size: 4rem; flex-shrink: 0; }
+    .charity-box h3 { font-size: 1.2rem; color: var(--blue-dark); margin-bottom: 10px; }
+    .charity-box p { font-size: 0.95rem; color: #4a6274; line-height: 1.8; }
+
+    /* ── SOURCES ── */
+    .sources-list { display: flex; flex-direction: column; gap: 12px; }
+    .source-item {
+      background: white; border-radius: 14px; padding: 16px 22px;
+      box-shadow: 0 4px 14px rgba(0,119,182,0.07);
+      font-size: 0.85rem; color: #4a6274; line-height: 1.7;
+      border-left: 4px solid var(--blue-light);
+    }
+    .source-item strong { color: var(--blue-dark); display: block; margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -403,9 +500,11 @@
     </div>
     <div class="nav-links">
       <a href="#mission">Mission</a>
+      <a href="#problem">The Problem</a>
       <a href="#how">How It Works</a>
-      <a href="#numbers">Numbers</a>
+      <a href="#team">Team</a>
       <a href="#financials">Financials</a>
+      <a href="#charity">Charity</a>
       <a href="#contact">Contact</a>
     </div>
   </nav>
@@ -538,6 +637,161 @@
         <div class="cost-row total"><span>Total</span><span>$810</span></div>
         <div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div>
         <div class="cost-row"><span>Ongoing monthly surplus</span><span>$200</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE PROBLEM -->
+  <section id="problem">
+    <h2>⚠️ The Problem</h2>
+    <div class="stat-grid">
+      <div class="stat-card reveal">
+        <div class="stat-num">1%</div>
+        <div class="stat-label">of all textiles are actually recycled</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-num">35%</div>
+        <div class="stat-label">of ocean microplastics come from synthetic textiles</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-num">25%</div>
+        <div class="stat-label">of new garments go unsold due to overproduction</div>
+      </div>
+      <div class="stat-card reveal">
+        <div class="stat-num">1.4M</div>
+        <div class="stat-label">trillion microfibres currently in our oceans</div>
+      </div>
+    </div>
+    <div class="quote-block reveal">
+      "It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."
+      <cite>— Fashion Revolution</cite>
+    </div>
+    <div class="quote-block reveal" style="margin-top:14px;">
+      The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people buy clothes and constantly throw away old ones to keep up with trends — increasing the amount of textile waste that ends up in our oceans.
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="team">
+    <h2>👥 Our Team</h2>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">🦁</div>
+        <h3>Leo Zaks</h3>
+        <div class="role">Head of Marketing &amp; Sales</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">⭐</div>
+        <h3>Ela Unlu</h3>
+        <div class="role">Head of Marketing &amp; Sales</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">⚙️</div>
+        <h3>Gabriel Balucan</h3>
+        <div class="role">Head of Supply Chain</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">🏆</div>
+        <h3>Arjun Anand</h3>
+        <div class="role">Leadership &amp; Management</div>
+      </div>
+    </div>
+    <div class="team-slogan reveal">
+      💚 "We clean to make the Earth green."
+    </div>
+  </section>
+
+  <!-- COMMUNITY -->
+  <section id="community">
+    <h2>🤝 Our Community</h2>
+    <div class="community-box reveal">
+      Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups.
+      We grow our community through <strong>flyers and brochures</strong> that spread the word and invite more people to join our mission.
+      <br /><br />
+      Our volunteers are the backbone of PikaThrift — they show up, pick up, and make a real difference.
+      Together, we're building a movement that helps both <strong>people and the planet</strong>.
+    </div>
+  </section>
+
+  <!-- OUR JOURNEY -->
+  <section id="journey">
+    <h2>🛤️ Our Journey</h2>
+    <div class="journey-grid">
+      <div class="journey-card reveal">
+        <h3>⚡ Challenges We Faced</h3>
+        <ul>
+          <li>Had to pivot from our original idea</li>
+          <li>Tough decisions about the logo design</li>
+          <li>Editing our 10-second and 30-second reels</li>
+          <li>Balancing acting, recording, and editing</li>
+        </ul>
+      </div>
+      <div class="journey-card reveal">
+        <h3>🌟 Highlights</h3>
+        <ul>
+          <li>Recording our 10-second and 30-second reels</li>
+          <li>Editing the final reels together</li>
+          <li>Acting and bringing the brand to life</li>
+          <li>Seeing the project come together</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- GOALS -->
+  <section id="goals">
+    <h2>🚀 Our Goals</h2>
+    <div class="goals-list">
+      <div class="goal-item reveal">
+        <div class="goal-icon">🌊</div>
+        <p>Get many volunteers and clean beaches of textile waste, giving clothes a second life while helping the ocean.</p>
+      </div>
+      <div class="goal-item reveal">
+        <div class="goal-icon">📈</div>
+        <p>Grow PikaThrift into a more popular and recognized organization so our positive impact on the oceans keeps expanding.</p>
+      </div>
+      <div class="goal-item reveal">
+        <div class="goal-icon">♻️</div>
+        <p>As we earn more, reinvest everything into upgrading our operations and increasing our environmental impact.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHARITY -->
+  <section id="charity">
+    <h2>💙 Our Charity of Choice</h2>
+    <div class="charity-box reveal">
+      <div class="charity-icon">🌊</div>
+      <div>
+        <h3>Save Our Shores</h3>
+        <p>
+          Save Our Shores is a non-profit organization dedicated to saving marine habitats from plastic pollution, offshore oil drilling, and more.
+          They host regular beach cleanups to protect the ocean — just like us. We chose them as our charity of choice because our missions align:
+          cleaner beaches, healthier oceans, and a better planet for everyone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section id="sources">
+    <h2>📚 Sources</h2>
+    <div class="sources-list">
+      <div class="source-item reveal">
+        <strong>National Library of Medicine (PMC)</strong>
+        "Sustainable Development Goals for Textiles and Fashion" — An official U.S. government website (Public Medical Central). Cited for textile recycling rates, overproduction, microplastics, and water consumption statistics.
+      </div>
+      <div class="source-item reveal">
+        <strong>Fashion Revolution</strong>
+        "What's In Our Clothes and How Does it Affect the Oceans?" — A non-profit organization focused on fashion and the environment that values people over profit and works to conserve and restore the environment. Cited for microfibre pollution statistics.
+      </div>
+      <div class="source-item reveal">
+        <strong>Marketplace</strong>
+        "What can clothing retailers do with all that excess inventory?" — A non-profit organization focused on raising public awareness about economics, tech, and more. Cited for the Burberry unsold merchandise statistic.
+      </div>
+      <div class="source-item reveal">
+        <strong>Goodwill</strong>
+        "What Is Goodwill's Diversion Rate From The Landfills?" — A non-profit organization focused on giving clothes a second life through donations. Referenced for context on textile diversion and resale.
       </div>
     </div>
   </section>
