@@ -7,282 +7,498 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f8ff;
-      color: #1a2e3b;
+    :root {
+      --blue-dark: #0077b6;
+      --blue-mid: #00b4d8;
+      --blue-light: #90e0ef;
+      --bg: #f0f8ff;
+      --text: #1a2e3b;
+      --card-shadow: 0 6px 24px rgba(0,119,182,0.12);
     }
 
-    /* HERO */
-    .hero {
-      background: linear-gradient(135deg, #0077b6, #00b4d8, #48cae4);
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(0,40,70,0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 32px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo img {
+      height: 38px;
+      width: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .nav-logo span {
       color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--blue-light); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #003d6b 0%, #0077b6 40%, #00b4d8 75%, #48cae4 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      padding: 80px 20px 60px;
+      padding: 120px 20px 100px;
       position: relative;
       overflow: hidden;
     }
-    .hero::before {
-      content: '';
+
+    /* Animated bubbles */
+    .bubbles {
       position: absolute;
-      bottom: -1px;
-      left: 0;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .bubble {
+      position: absolute;
+      bottom: -80px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+      animation: rise linear infinite;
+    }
+    .bubble:nth-child(1)  { width:18px; height:18px; left:10%; animation-duration:8s; animation-delay:0s; }
+    .bubble:nth-child(2)  { width:10px; height:10px; left:20%; animation-duration:6s; animation-delay:1s; }
+    .bubble:nth-child(3)  { width:24px; height:24px; left:33%; animation-duration:10s; animation-delay:2s; }
+    .bubble:nth-child(4)  { width:14px; height:14px; left:48%; animation-duration:7s; animation-delay:0.5s; }
+    .bubble:nth-child(5)  { width:20px; height:20px; left:60%; animation-duration:9s; animation-delay:3s; }
+    .bubble:nth-child(6)  { width:8px;  height:8px;  left:72%; animation-duration:5s; animation-delay:1.5s; }
+    .bubble:nth-child(7)  { width:16px; height:16px; left:83%; animation-duration:8s; animation-delay:2.5s; }
+    .bubble:nth-child(8)  { width:12px; height:12px; left:90%; animation-duration:6s; animation-delay:0s; }
+    @keyframes rise {
+      0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+      100% { transform: translateY(-110vh) scale(1.3); opacity: 0; }
+    }
+
+    /* Wave at bottom of hero */
+    .hero-wave {
+      position: absolute;
+      bottom: 0; left: 0;
       width: 100%;
-      height: 60px;
-      background: #f0f8ff;
-      clip-path: ellipse(55% 100% at 50% 100%);
+      overflow: hidden;
+      line-height: 0;
     }
+    .hero-wave svg { display: block; }
+
+    .hero-logo {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid rgba(255,255,255,0.4);
+      box-shadow: 0 0 40px rgba(255,255,255,0.25), 0 0 80px rgba(0,180,216,0.4);
+      animation: glow 3s ease-in-out infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,255,255,0.2), 0 0 60px rgba(0,180,216,0.3); }
+      50%       { box-shadow: 0 0 50px rgba(255,255,255,0.4), 0 0 100px rgba(0,180,216,0.6); }
+    }
+
     .hero h1 {
-      font-size: 3.2rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 900;
+      color: white;
+      letter-spacing: 3px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: fadeUp 0.8s ease both;
     }
-    .hero p {
-      font-size: 1.2rem;
-      margin-top: 14px;
-      opacity: 0.92;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
+    .hero .tagline {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: rgba(255,255,255,0.9);
+      margin-top: 16px;
+      max-width: 540px;
+      line-height: 1.7;
+      animation: fadeUp 0.8s 0.2s ease both;
     }
     .hero .badge {
       display: inline-block;
-      margin-top: 22px;
-      background: rgba(255,255,255,0.2);
-      border: 2px solid rgba(255,255,255,0.6);
+      margin-top: 24px;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.5);
       border-radius: 30px;
-      padding: 6px 20px;
+      padding: 8px 22px;
+      color: white;
       font-size: 0.9rem;
       letter-spacing: 1px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+    .hero-btn {
+      display: inline-block;
+      margin-top: 32px;
+      background: white;
+      color: var(--blue-dark);
+      font-weight: 800;
+      font-size: 1rem;
+      padding: 14px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+    .hero-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
     }
 
-    /* SECTIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTIONS ── */
     section {
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 50px 24px;
+      padding: 70px 24px;
     }
     section h2 {
-      font-size: 1.8rem;
-      color: #0077b6;
-      margin-bottom: 20px;
-      border-left: 5px solid #00b4d8;
-      padding-left: 14px;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      color: var(--blue-dark);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    section h2::after {
+      content: '';
+      flex: 1;
+      height: 3px;
+      background: linear-gradient(to right, var(--blue-mid), transparent);
+      border-radius: 2px;
     }
 
-    /* MISSION */
+    /* Fade-in on scroll */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MISSION ── */
     .mission-box {
       background: white;
-      border-radius: 16px;
-      padding: 28px 32px;
-      box-shadow: 0 4px 18px rgba(0,119,182,0.1);
+      border-radius: 20px;
+      padding: 32px 36px;
+      box-shadow: var(--card-shadow);
       font-size: 1.1rem;
-      line-height: 1.8;
+      line-height: 1.9;
+      border-left: 6px solid var(--blue-mid);
     }
-    .mission-box strong { color: #0077b6; }
+    .mission-box strong { color: var(--blue-dark); }
 
-    /* HOW IT WORKS */
+    /* ── HOW IT WORKS ── */
     .steps {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 20px;
-      flex-wrap: wrap;
     }
     .step {
-      flex: 1;
-      min-width: 200px;
       background: white;
-      border-radius: 14px;
-      padding: 24px 20px;
+      border-radius: 18px;
+      padding: 28px 20px;
       text-align: center;
-      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
-      border-top: 4px solid #00b4d8;
+      box-shadow: var(--card-shadow);
+      border-top: 5px solid var(--blue-mid);
+      transition: transform 0.25s, box-shadow 0.25s;
+      cursor: default;
     }
-    .step .icon { font-size: 2.4rem; margin-bottom: 12px; }
-    .step h3 { color: #0077b6; margin-bottom: 8px; font-size: 1rem; }
-    .step p { font-size: 0.9rem; line-height: 1.6; color: #4a6274; }
+    .step:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 40px rgba(0,119,182,0.18);
+    }
+    .step .icon {
+      font-size: 2.8rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .step h3 { color: var(--blue-dark); margin-bottom: 10px; font-size: 1rem; }
+    .step p { font-size: 0.88rem; line-height: 1.65; color: #4a6274; }
 
-    /* NUMBERS */
+    /* ── NUMBERS ── */
     .numbers-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 18px;
+      gap: 20px;
     }
     .number-card {
-      background: white;
-      border-radius: 14px;
-      padding: 24px 16px;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+      border-radius: 18px;
+      padding: 30px 16px;
       text-align: center;
-      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
+      box-shadow: var(--card-shadow);
+      color: white;
+      transition: transform 0.25s;
     }
+    .number-card:hover { transform: scale(1.05); }
     .number-card .num {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #0077b6;
+      font-size: 2.4rem;
+      font-weight: 900;
     }
     .number-card .label {
-      font-size: 0.85rem;
-      color: #4a6274;
-      margin-top: 6px;
+      font-size: 0.82rem;
+      opacity: 0.88;
+      margin-top: 8px;
     }
 
-    /* COSTS TABLE */
+    /* ── FINANCIALS ── */
     .costs-wrap {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
-      flex-wrap: wrap;
     }
     .cost-box {
-      flex: 1;
-      min-width: 240px;
       background: white;
-      border-radius: 14px;
-      padding: 24px 22px;
-      box-shadow: 0 4px 16px rgba(0,119,182,0.08);
+      border-radius: 18px;
+      padding: 26px 24px;
+      box-shadow: var(--card-shadow);
     }
     .cost-box h3 {
-      color: #0077b6;
+      color: var(--blue-dark);
       font-size: 1rem;
-      margin-bottom: 14px;
-      padding-bottom: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
       border-bottom: 2px solid #e0f0fa;
     }
     .cost-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.88rem;
-      padding: 5px 0;
+      font-size: 0.87rem;
+      padding: 6px 0;
       color: #4a6274;
       border-bottom: 1px solid #f0f7fc;
     }
     .cost-row.total {
       font-weight: 700;
-      color: #0077b6;
+      color: var(--blue-dark);
       border-bottom: none;
-      margin-top: 8px;
+      margin-top: 10px;
       font-size: 0.95rem;
     }
 
-    /* GET INVOLVED */
-    .cta-box {
-      background: linear-gradient(135deg, #0077b6, #00b4d8);
-      color: white;
-      border-radius: 16px;
-      padding: 36px 32px;
+    /* ── CONTACT ── */
+    .contact-box {
+      background: linear-gradient(135deg, #003d6b, #0077b6, #00b4d8);
+      border-radius: 24px;
+      padding: 50px 36px;
       text-align: center;
-      box-shadow: 0 4px 20px rgba(0,119,182,0.25);
+      box-shadow: 0 8px 32px rgba(0,119,182,0.3);
+      position: relative;
+      overflow: hidden;
     }
-    .cta-box h2 {
+    .contact-box::before {
+      content: '🌊';
+      position: absolute;
+      font-size: 8rem;
+      opacity: 0.06;
+      right: -20px;
+      top: -20px;
+    }
+    .contact-box h2 {
       color: white;
-      border-left: none;
-      padding-left: 0;
-      margin-bottom: 12px;
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+      justify-content: center;
     }
-    .cta-box p { opacity: 0.92; font-size: 1rem; line-height: 1.7; }
-    .cta-email {
+    .contact-box h2::after { display: none; }
+    .contact-box p {
+      color: rgba(255,255,255,0.88);
+      font-size: 1rem;
+      line-height: 1.8;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .contact-note {
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 16px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 8px 18px;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.82rem;
+    }
+    .contact-btn {
+      display: inline-block;
+      margin-top: 28px;
       background: white;
-      color: #0077b6;
-      font-weight: 700;
-      padding: 10px 26px;
-      border-radius: 30px;
+      color: var(--blue-dark);
+      font-weight: 800;
+      font-size: 1rem;
+      padding: 14px 38px;
+      border-radius: 50px;
       text-decoration: none;
-      font-size: 0.95rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .contact-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.25);
     }
 
-    /* FOOTER */
+    /* ── WAVE DIVIDER ── */
+    .wave-sep {
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
+      background: var(--bg);
+    }
+    .wave-sep.flip { transform: rotate(180deg); }
+
+    /* ── FOOTER ── */
     footer {
       text-align: center;
-      padding: 28px;
+      padding: 30px 20px;
       font-size: 0.82rem;
       color: #789aaa;
-      background: #e8f4fb;
-      margin-top: 20px;
-    }
-
-    /* DIVIDER */
-    .wave-divider {
-      width: 100%;
-      line-height: 0;
+      background: #daeef8;
     }
   </style>
 </head>
 <body>
 
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-logo">
+      <img src="logo.png" alt="PikaThrift Logo" />
+      <span>PikaThrift</span>
+    </div>
+    <div class="nav-links">
+      <a href="#mission">Mission</a>
+      <a href="#how">How It Works</a>
+      <a href="#numbers">Numbers</a>
+      <a href="#financials">Financials</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
   <!-- HERO -->
   <div class="hero">
+    <div class="bubbles">
+      <div class="bubble"></div><div class="bubble"></div>
+      <div class="bubble"></div><div class="bubble"></div>
+      <div class="bubble"></div><div class="bubble"></div>
+      <div class="bubble"></div><div class="bubble"></div>
+    </div>
+
+    <img src="logo.png" alt="PikaThrift Logo" class="hero-logo" />
     <h1>PikaThrift</h1>
-    <p>Cleaning oceans. Clothing communities. One pound at a time.</p>
-    <span class="badge">&#127754; Non-Profit Beach Cleanup Thrift</span>
+    <p class="tagline">Cleaning oceans. Clothing communities.<br>One pound at a time.</p>
+    <span class="badge">🌊 Student-Run Non-Profit Beach Cleanup</span>
+    <a href="#mission" class="hero-btn">Learn More ↓</a>
+
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="100%" height="80">
+        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#f0f8ff"/>
+      </svg>
+    </div>
   </div>
 
   <!-- MISSION -->
-  <section>
-    <h2>Our Mission</h2>
-    <div class="mission-box">
-      PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches before it reaches the ocean,
-      <strong>washes and sorts</strong> every item, then sells clean clothing <strong>cheaply to thrift shops</strong> so low-income
-      families can afford quality clothes. Every dollar we earn goes right back into more cleanups.
+  <section id="mission">
+    <h2>🎯 Our Mission</h2>
+    <div class="mission-box reveal">
+      PikaThrift is a <strong>student-run non-profit</strong> that collects textile waste from beaches
+      before it reaches the ocean, <strong>washes and sorts</strong> every item, then sells clean clothing
+      <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes.
+      Every dollar we earn goes right back into more cleanups.
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section>
-    <h2>How It Works</h2>
+  <section id="how">
+    <h2>⚙️ How It Works</h2>
     <div class="steps">
-      <div class="step">
-        <div class="icon">&#127754;</div>
+      <div class="step reveal">
+        <span class="icon">🌊</span>
         <h3>Step 1 — Collect</h3>
         <p>Volunteers use nets and bags to gather textile waste from beaches and coastal areas.</p>
       </div>
-      <div class="step">
-        <div class="icon">&#129380;</div>
+      <div class="step reveal">
+        <span class="icon">🧺</span>
         <h3>Step 2 — Clean</h3>
         <p>Every item is washed, dried, and sorted by quality and size at the laundromat.</p>
       </div>
-      <div class="step">
-        <div class="icon">&#128717;</div>
+      <div class="step reveal">
+        <span class="icon">🛍️</span>
         <h3>Step 3 — Sell</h3>
         <p>Clean, sorted clothing is sold affordably to local thrift shops for resale.</p>
       </div>
-      <div class="step">
-        <div class="icon">&#9851;</div>
+      <div class="step reveal">
+        <span class="icon">♻️</span>
         <h3>Step 4 — Repeat</h3>
         <p>Every dollar earned is reinvested into more nets, more cleanups, and more impact.</p>
       </div>
     </div>
   </section>
 
-  <!-- BY THE NUMBERS -->
-  <section>
-    <h2>By the Numbers</h2>
+  <!-- NUMBERS -->
+  <section id="numbers">
+    <h2>📊 By the Numbers</h2>
     <div class="numbers-grid">
-      <div class="number-card">
-        <div class="num">440 lb</div>
-        <div class="label">Clothes collected per month</div>
+      <div class="number-card reveal">
+        <div class="num" data-target="440">0</div>
+        <div class="label">lbs of clothes collected per month</div>
       </div>
-      <div class="number-card">
-        <div class="num">5</div>
+      <div class="number-card reveal">
+        <div class="num" data-target="5">0</div>
         <div class="label">Dedicated volunteers</div>
       </div>
-      <div class="number-card">
-        <div class="num">$810</div>
+      <div class="number-card reveal">
+        <div class="num" data-target="810" data-prefix="$">0</div>
         <div class="label">Monthly revenue</div>
       </div>
-      <div class="number-card">
-        <div class="num">$200</div>
+      <div class="number-card reveal">
+        <div class="num" data-target="200" data-prefix="$">0</div>
         <div class="label">Monthly surplus reinvested</div>
       </div>
     </div>
   </section>
 
   <!-- FINANCIALS -->
-  <section>
-    <h2>Financials</h2>
+  <section id="financials">
+    <h2>💰 Financials</h2>
     <div class="costs-wrap">
 
-      <div class="cost-box">
+      <div class="cost-box reveal">
         <h3>Starting Costs</h3>
         <div class="cost-row"><span>Nets (5 × $21.99)</span><span>$110</span></div>
         <div class="cost-row"><span>Drying racks (2 × $11.99)</span><span>$24</span></div>
@@ -291,7 +507,7 @@
         <div class="cost-row total"><span>Funding needed</span><span>$594</span></div>
       </div>
 
-      <div class="cost-box">
+      <div class="cost-box reveal">
         <h3>Monthly Costs</h3>
         <div class="cost-row"><span>Laundromat</span><span>$90</span></div>
         <div class="cost-row"><span>Cleaning supplies</span><span>$15</span></div>
@@ -304,34 +520,69 @@
         <div class="cost-row total"><span>Total</span><span>$610</span></div>
       </div>
 
-      <div class="cost-box">
+      <div class="cost-box reveal">
         <h3>Monthly Revenue</h3>
         <div class="cost-row"><span>Sales (440 lb × $1.50)</span><span>$660</span></div>
         <div class="cost-row"><span>Donations</span><span>$150</span></div>
         <div class="cost-row total"><span>Total</span><span>$810</span></div>
         <div class="cost-row" style="margin-top:12px;"><span>Month 1 surplus</span><span>$66</span></div>
-        <div class="cost-row"><span>Ongoing surplus</span><span>$200</span></div>
+        <div class="cost-row"><span>Ongoing monthly surplus</span><span>$200</span></div>
       </div>
 
     </div>
   </section>
 
-  <!-- GET INVOLVED -->
-  <section>
-    <div class="cta-box">
-      <h2>Get Involved</h2>
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-box reveal">
+      <h2>✉️ Get In Touch</h2>
       <p>
-        We're always looking for <strong>volunteers</strong> to join our beach cleanups,
-        and we welcome <strong>donations</strong> to help us scale our mission.<br />
-        Every pair of hands — and every dollar — keeps more clothes out of the ocean.
+        Interested in volunteering or partnering with us?<br />
+        We'd love to hear from you — send us an email!
       </p>
-      <a class="cta-email" href="mailto:leo.zaks11@gmail.com">Contact Us</a>
+      <div class="contact-note">📚 This is a student school project — not yet accepting payments or donations</div>
+      <br />
+      <a class="contact-btn" href="mailto:leo.zaks11@gmail.com">📧 Email Us</a>
     </div>
   </section>
 
   <footer>
     &copy; 2026 PikaThrift &mdash; A student non-profit dedicated to ocean cleanup and affordable clothing.
   </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          // Trigger counter if number card
+          const num = e.target.querySelector ? e.target.querySelector('[data-target]') : null;
+          if (num && !num.dataset.counted) {
+            num.dataset.counted = true;
+            animateCount(num);
+          }
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Animated counters
+    function animateCount(el) {
+      const target = +el.dataset.target;
+      const prefix = el.dataset.prefix || '';
+      const duration = 1200;
+      const start = performance.now();
+      function update(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = prefix + Math.round(eased * target).toLocaleString();
+        if (t < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+  </script>
 
 </body>
 </html>
