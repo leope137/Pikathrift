@@ -341,10 +341,8 @@ footer{text-align:center;padding:28px 20px;font-size:0.82rem;color:rgba(0,229,25
 
 <!-- STATS BAR -->
 <div id="stats-bar">
-  <span><div class="live-dot"></div> <span id="live-viewers">4</span> viewing now</span>
-  <span>👁 <span id="visit-count">...</span> total visitors</span>
-  <span>♻️ <span id="clothes-saved">...</span> lbs saved (projected)</span>
-  <span>🎯 SDG 12: Responsible Consumption</span>
+  <span>♻️ <span id="clothes-saved">...</span> lbs projected saved since May 1</span>
+  <span>🎯 SDG 12: Responsible Consumption and Production</span>
 </div>
 
 <!-- NAV -->
@@ -631,23 +629,6 @@ window.addEventListener('scroll', () => {
   backTop.classList.toggle('show', s > 400);
 });
 
-// ══════════════════════════════════════════
-// VISITOR COUNTER
-// ══════════════════════════════════════════
-const baseVisits = 2847;
-let dv = parseInt(localStorage.getItem('pt_visits') || '0') + 1;
-localStorage.setItem('pt_visits', dv);
-document.getElementById('visit-count').textContent = (baseVisits + dv).toLocaleString();
-
-// ══════════════════════════════════════════
-// LIVE VIEWERS (simulated)
-// ══════════════════════════════════════════
-let viewers = Math.floor(Math.random() * 5) + 3;
-document.getElementById('live-viewers').textContent = viewers;
-setInterval(() => {
-  viewers = Math.max(1, Math.min(12, viewers + (Math.random()>0.5?1:-1)));
-  document.getElementById('live-viewers').textContent = viewers;
-}, 12000 + Math.random() * 15000);
 
 // ══════════════════════════════════════════
 // LIVE CLOTHES SAVED COUNTER (projected)
