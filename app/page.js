@@ -603,7 +603,7 @@ export default function Home() {
       oceanGain = audioCtx.createGain(); oceanGain.gain.value = 0;
       src.connect(filt); filt.connect(oceanGain); oceanGain.connect(audioCtx.destination);
       src.start();
-      oceanGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 1.5);
+      oceanGain.gain.linearRampToValueAtTime(0.75, audioCtx.currentTime + 1.5);
     }
 
     if (soundBtn) {
@@ -614,7 +614,7 @@ export default function Home() {
         if (soundOn) {
           if (!audioCtx) { createOceanSound(); startAmbientMusic(); }
           else {
-            if (oceanGain) { oceanGain.gain.cancelScheduledValues(audioCtx.currentTime); oceanGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.5); }
+            if (oceanGain) { oceanGain.gain.cancelScheduledValues(audioCtx.currentTime); oceanGain.gain.linearRampToValueAtTime(0.75, audioCtx.currentTime + 0.5); }
             startAmbientMusic();
           }
         } else {
@@ -654,36 +654,112 @@ export default function Home() {
     function startAmbientMusic() {
       initAudio();
       if (!audioCtx || ambientGain) return;
+
       ambientGain = audioCtx.createGain();
       ambientGain.gain.value = 0;
-      ambientGain.connect(audioCtx.destination);
-      const reverbBuf = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+
+      // Compressor for EDM punch
+      const comp = audioCtx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.ratio.value = 5;
+      comp.attack.value = 0.003; comp.release.value = 0.2;
+      comp.connect(ambientGain); ambientGain.connect(audioCtx.destination);
+
+      // Short reverb tail
+      const revBuf = audioCtx.createBuffer(2, audioCtx.sampleRate * 2, audioCtx.sampleRate);
       for (let c = 0; c < 2; c++) {
-        const d = reverbBuf.getChannelData(c);
-        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2);
+        const d = revBuf.getChannelData(c);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 1.8);
       }
-      const reverb = audioCtx.createConvolver();
-      reverb.buffer = reverbBuf; reverb.connect(ambientGain);
-      const notes = [220, 261.63, 293.66, 329.63, 392, 440, 523.25];
-      function scheduleNote() {
-        if (!soundOn || !audioCtx) return;
-        const freq = notes[Math.floor(Math.random() * notes.length)];
+      const rev = audioCtx.createConvolver(); rev.buffer = revBuf;
+      const revG = audioCtx.createGain(); revG.gain.value = 0.18;
+      rev.connect(revG); revG.connect(comp);
+
+      const BPM = 128, beat = 60 / BPM;
+
+      function kick(t) {
         const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = 'sine'; o.frequency.value = freq;
-        g.gain.setValueAtTime(0, audioCtx.currentTime);
-        g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.4);
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 4);
-        o.connect(g); g.connect(reverb);
-        o.start(); o.stop(audioCtx.currentTime + 4);
-        ambientScheduler = setTimeout(scheduleNote, 1800 + Math.random() * 2800);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.07);
+        g.gain.setValueAtTime(1.4, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+        o.connect(g); g.connect(comp); o.start(t); o.stop(t + 0.4);
+        const nb = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * 0.018), audioCtx.sampleRate);
+        const nd = nb.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const ns = audioCtx.createBufferSource(); ns.buffer = nb;
+        const nf = audioCtx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 3500;
+        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.9, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.018);
+        ns.connect(nf); nf.connect(ng); ng.connect(comp); ns.start(t); ns.stop(t + 0.018);
       }
-      ambientGain.gain.linearRampToValueAtTime(0.65, audioCtx.currentTime + 2);
-      scheduleNote();
+
+      function snare(t) {
+        const nb = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * 0.18), audioCtx.sampleRate);
+        const nd = nb.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const ns = audioCtx.createBufferSource(); ns.buffer = nb;
+        const nf = audioCtx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1400; nf.Q.value = 0.8;
+        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.5, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        ns.connect(nf); nf.connect(ng); ng.connect(comp); nf.connect(rev);
+        ns.start(t); ns.stop(t + 0.18);
+      }
+
+      function hat(t, open) {
+        const dur = open ? 0.1 : 0.03;
+        const nb = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+        const nd = nb.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+        const ns = audioCtx.createBufferSource(); ns.buffer = nb;
+        const nf = audioCtx.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 8000;
+        const ng = audioCtx.createGain(); ng.gain.setValueAtTime(0.14, t); ng.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        ns.connect(nf); nf.connect(ng); ng.connect(comp); ns.start(t); ns.stop(t + dur);
+      }
+
+      // A minor bass pattern
+      const bassFreqs = [110, 82.41, 110, 98, 110, 73.42, 82.41, 110];
+      function bass(t, idx, dur) {
+        const o = audioCtx.createOscillator(); o.type = 'sawtooth';
+        o.frequency.value = bassFreqs[idx % bassFreqs.length];
+        const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 5;
+        f.frequency.setValueAtTime(200, t); f.frequency.linearRampToValueAtTime(900, t + 0.04); f.frequency.linearRampToValueAtTime(300, t + dur * 0.7);
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0.55, t); g.gain.setValueAtTime(0.5, t + dur - 0.02); g.gain.linearRampToValueAtTime(0, t + dur);
+        o.connect(f); f.connect(g); g.connect(comp); o.start(t); o.stop(t + dur);
+      }
+
+      // A minor lead arpeggio
+      const leadFreqs = [440, 523.25, 659.26, 784, 880, 784, 659.26, 587.33, 523.25, 440, 392, 440, 523.25, 659.26, 784, 659.26];
+      function lead(t, idx, dur) {
+        const o = audioCtx.createOscillator(); o.type = 'sawtooth';
+        o.frequency.value = leadFreqs[idx % leadFreqs.length];
+        const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = 4;
+        f.frequency.setValueAtTime(1200, t); f.frequency.exponentialRampToValueAtTime(5000, t + 0.015); f.frequency.exponentialRampToValueAtTime(1800, t + dur * 0.5);
+        const g = audioCtx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.07, t + 0.01); g.gain.setValueAtTime(0.065, t + dur - 0.03); g.gain.linearRampToValueAtTime(0, t + dur);
+        o.connect(f); f.connect(g); g.connect(comp); f.connect(rev);
+        o.start(t); o.stop(t + dur);
+      }
+
+      let barIdx = 0;
+      function scheduleBar() {
+        if (!soundOn || !audioCtx) return;
+        const t0 = audioCtx.currentTime + 0.04;
+        kick(t0); kick(t0 + beat * 2);
+        snare(t0 + beat); snare(t0 + beat * 3);
+        for (let i = 0; i < 8; i++) hat(t0 + beat * 0.5 * i, i === 7);
+        for (let i = 0; i < 8; i++) bass(t0 + beat * 0.5 * i, barIdx * 8 + i, beat * 0.5);
+        if (barIdx >= 1) {
+          for (let i = 0; i < 16; i++) lead(t0 + beat * 0.25 * i, barIdx * 16 + i, beat * 0.25 * 0.88);
+        }
+        barIdx++;
+        ambientScheduler = setTimeout(scheduleBar, beat * 4 * 1000 - 40);
+      }
+
+      ambientGain.gain.linearRampToValueAtTime(0.55, audioCtx.currentTime + 2.5);
+      scheduleBar();
     }
 
     function stopAmbientMusic() {
       clearTimeout(ambientScheduler);
-      if (ambientGain && audioCtx) ambientGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+      ambientScheduler = null;
+      if (ambientGain && audioCtx) ambientGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+      ambientGain = null;
     }
 
     // ── GAME SOUNDS ──
@@ -786,7 +862,7 @@ export default function Home() {
       t.innerHTML = `<span class="toast-icon">${icon}</span>${text}`;
       toastContainer.appendChild(t);
       requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 5000);
+      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 9000);
     }
 
     function showTrivia(text) {
@@ -796,7 +872,7 @@ export default function Home() {
       t.innerHTML = `<span class="toast-icon">🧠</span><strong style="color:var(--neon);display:block;margin-bottom:3px">Did you know?</strong>${text}`;
       toastContainer.appendChild(t);
       requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
-      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 7000);
+      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 12000);
     }
 
     const sdgFacts = [
@@ -915,7 +991,7 @@ export default function Home() {
         x: 44 + Math.random() * (gc.width - 88),
         y: -44, emoji, isCloth,
         speed: (1.9 + Math.random() * 2.2) * speedFactor,
-        hitR: 32,
+        hitR: 40,
         rot: (Math.random() - 0.5) * 0.4,
         rotV: (Math.random() - 0.5) * 0.045,
         wobble: Math.random() * Math.PI * 2,
@@ -975,7 +1051,7 @@ export default function Home() {
       gctx.fillText('🌊  OCEAN FLOOR  —  CATCH CLOTHES BEFORE THEY SINK  🌊', gc.width / 2, gc.height - 24);
 
       // Draw items
-      const fontSize = gc.height > 280 ? 36 : 28;
+      const fontSize = gc.height > 280 ? 46 : 36;
       gctx.font = `${fontSize}px serif`;
       gctx.textAlign = 'center'; gctx.textBaseline = 'middle';
 
@@ -987,13 +1063,14 @@ export default function Home() {
 
         gctx.save();
         gctx.translate(item.x, item.y); gctx.rotate(item.rot);
-        gctx.beginPath(); gctx.arc(0, 0, item.hitR * 0.92, 0, Math.PI * 2);
-        gctx.fillStyle = item.isCloth ? 'rgba(0,229,255,0.13)' : 'rgba(255,80,80,0.13)';
+        // Glowing circle background
+        gctx.beginPath(); gctx.arc(0, 0, item.hitR, 0, Math.PI * 2);
+        gctx.fillStyle = item.isCloth ? 'rgba(0,229,255,0.22)' : 'rgba(255,80,80,0.22)';
         gctx.fill();
-        gctx.strokeStyle = item.isCloth ? 'rgba(0,229,255,0.5)' : 'rgba(255,80,80,0.45)';
-        gctx.lineWidth = 1.5; gctx.stroke();
-        gctx.shadowColor = item.isCloth ? 'rgba(0,229,255,0.9)' : 'rgba(255,80,80,0.8)';
-        gctx.shadowBlur = item.isCloth ? 16 : 12;
+        gctx.strokeStyle = item.isCloth ? 'rgba(0,229,255,0.85)' : 'rgba(255,80,80,0.85)';
+        gctx.lineWidth = 2.5; gctx.stroke();
+        gctx.shadowColor = item.isCloth ? 'rgba(0,229,255,1)' : 'rgba(255,80,80,1)';
+        gctx.shadowBlur = item.isCloth ? 30 : 22;
         gctx.fillText(item.emoji, 0, 0);
         gctx.restore();
 
@@ -1232,8 +1309,8 @@ export default function Home() {
           <div className="intro-ring ir2"></div>
           <div className="intro-ring ir3"></div>
           <div className="intro-ring ir4"></div>
-          <img src="/logo.png" alt="PikaThrift" id="intro-logo-img"/>
-          <div id="intro-brand">PikaThrift</div>
+          <img src="/logo.png" alt="Pikathrift" id="intro-logo-img"/>
+          <div id="intro-brand">Pikathrift</div>
           <div id="intro-sdg">🎯 UN SDG Goal 12 · Responsible Consumption</div>
           <div id="intro-tagline">Cleaning oceans. Clothing communities.</div>
           <div id="intro-tagline2">One pound at a time.</div>
@@ -1256,7 +1333,7 @@ export default function Home() {
       {/* Loading Screen */}
       <div id="loader">
         <div className="loader-pct" id="loader-pct">0%</div>
-        <img src="/logo.png" className="loader-logo" alt="PikaThrift"/>
+        <img src="/logo.png" className="loader-logo" alt="Pikathrift"/>
         <div className="loader-bar-wrap"><div className="loader-bar" id="loader-bar"></div></div>
         <div className="loader-text">LOADING PIKATHRIFT</div>
       </div>
@@ -1274,8 +1351,8 @@ export default function Home() {
       {/* Nav */}
       <nav>
         <div className="nav-logo" id="logo-click">
-          <img src="/logo.png" alt="PikaThrift"/>
-          <span>PikaThrift</span>
+          <img src="/logo.png" alt="Pikathrift"/>
+          <span>Pikathrift</span>
         </div>
         <div className="nav-links">
           <a href="#mission">Mission</a>
@@ -1296,9 +1373,9 @@ export default function Home() {
           <div className="logo-wrap">
             <div className="ring ring1"></div><div className="ring ring2"></div>
             <div className="ring ring3"></div><div className="ring ring4"></div>
-            <img src="/logo.png" alt="PikaThrift Logo" className="hero-logo" id="hero-logo"/>
+            <img src="/logo.png" alt="Pikathrift Logo" className="hero-logo" id="hero-logo"/>
           </div>
-          <h1>PikaThrift</h1>
+          <h1>Pikathrift</h1>
           <p className="tagline"><span id="typed-text"></span><span id="typed-cursor"></span></p>
           <div className="badge">🌊 Student-Run Non-Profit Beach Cleanup</div>
           <br/>
@@ -1313,7 +1390,7 @@ export default function Home() {
         <section id="mission">
           <h2>🎯 Our Mission</h2>
           <div className="mission-box glass reveal">
-            PikaThrift is a <strong>student-run non-profit</strong> built around <strong>UN SDG Goal 12: Responsible Consumption and Production</strong>. We collect textile waste from beaches before it reaches the ocean, <strong>wash and sort</strong> every item, then sell clean clothing <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes. By giving discarded clothes a second life, we reduce waste, fight fast fashion, and put every dollar back into more cleanups.
+            Pikathrift is a <strong>student-run non-profit</strong> built around <strong>UN SDG Goal 12: Responsible Consumption and Production</strong>. We collect textile waste from beaches before it reaches the ocean, <strong>wash and sort</strong> every item, then sell clean clothing <strong>cheaply to thrift shops</strong> so low-income families can afford quality clothes. By giving discarded clothes a second life, we reduce waste, fight fast fashion, and put every dollar back into more cleanups.
           </div>
         </section>
 
@@ -1344,9 +1421,9 @@ export default function Home() {
           <div className="mission-box glass reveal" style={{borderLeftColor:'#ffd700'}}>
             <strong style={{color:'#ffd700'}}>Responsible Consumption and Production</strong> is one of the 17 United Nations Sustainable Development Goals. It calls on governments, businesses, and individuals to change the way we produce and consume goods — cutting waste, reducing environmental damage, and building a circular economy by 2030.
             <br/><br/>
-            <strong style={{color:'#ffd700'}}>Target 12.5</strong> — Substantially reduce waste generation through prevention, reduction, recycling, and reuse. PikaThrift directly addresses this target by intercepting textile waste on beaches before it enters the ocean and extending every garment&apos;s life through resale at thrift shops.
+            <strong style={{color:'#ffd700'}}>Target 12.5</strong> — Substantially reduce waste generation through prevention, reduction, recycling, and reuse. Pikathrift directly addresses this target by intercepting textile waste on beaches before it enters the ocean and extending every garment&apos;s life through resale at thrift shops.
             <br/><br/>
-            <strong style={{color:'#ffd700'}}>Target 12.8</strong> — Ensure that people everywhere have relevant information and awareness for sustainable development and lifestyles in harmony with nature. PikaThrift spreads this awareness through flyers, social media reels, and community outreach.
+            <strong style={{color:'#ffd700'}}>Target 12.8</strong> — Ensure that people everywhere have relevant information and awareness for sustainable development and lifestyles in harmony with nature. Pikathrift spreads this awareness through flyers, social media reels, and community outreach.
             <br/><br/>
             Every pound of clothing we rescue is a concrete step toward the world SDG 12 envisions: one that produces less, wastes less, and reuses more.
           </div>
@@ -1391,10 +1468,22 @@ export default function Home() {
         <section id="team">
           <h2>👥 Our Team</h2>
           <div className="team-grid">
-            <div className="team-card reveal"><div className="team-avatar">LZ</div><h3>Leo Zaks</h3><div className="role">Head of Marketing &amp; Sales</div></div>
-            <div className="team-card reveal"><div className="team-avatar">EU</div><h3>Ela Unlu</h3><div className="role">Head of Marketing &amp; Sales</div></div>
-            <div className="team-card reveal"><div className="team-avatar">GB</div><h3>Gabriel Balucan</h3><div className="role">Head of Supply Chain</div></div>
-            <div className="team-card reveal"><div className="team-avatar">AA</div><h3>Arjun Anand</h3><div className="role">Leadership &amp; Management</div></div>
+            <a href="https://mail.google.com/mail/?view=cm&to=lz14507@bullischarterschool.com" target="_blank" rel="noopener noreferrer" className="team-card reveal team-link">
+              <div className="team-avatar">LZ</div><h3>Leo Zaks</h3><div className="role">Head of Marketing &amp; Sales</div>
+              <div className="team-email">✉️ Send email</div>
+            </a>
+            <a href="https://mail.google.com/mail/?view=cm&to=eu13177@bullischarterschool.com" target="_blank" rel="noopener noreferrer" className="team-card reveal team-link">
+              <div className="team-avatar">EU</div><h3>Ela Unlu</h3><div className="role">Head of Marketing &amp; Sales</div>
+              <div className="team-email">✉️ Send email</div>
+            </a>
+            <a href="https://mail.google.com/mail/?view=cm&to=gb12908@bullischarterschool.com" target="_blank" rel="noopener noreferrer" className="team-card reveal team-link">
+              <div className="team-avatar">GB</div><h3>Gabriel Balucan</h3><div className="role">Head of Supply Chain</div>
+              <div className="team-email">✉️ Send email</div>
+            </a>
+            <a href="https://mail.google.com/mail/?view=cm&to=aa14498@bullischarterschool.com" target="_blank" rel="noopener noreferrer" className="team-card reveal team-link">
+              <div className="team-avatar">AA</div><h3>Arjun Anand</h3><div className="role">Leadership &amp; Management</div>
+              <div className="team-email">✉️ Send email</div>
+            </a>
           </div>
           <div className="team-slogan reveal">💚 &quot;We clean to make the Earth green.&quot;</div>
         </section>
@@ -1402,7 +1491,7 @@ export default function Home() {
         {/* Community */}
         <section id="community">
           <h2>🤝 Our Community</h2>
-          <div className="community-box glass reveal">Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups. We grow through <strong>flyers and brochures</strong> that spread the word and invite more people to join. Our volunteers are the backbone of PikaThrift. Together we are building a movement that helps both <strong>people and the planet</strong>.</div>
+          <div className="community-box glass reveal">Our community is made up of <strong>eco-conscious young adults</strong> who have the time and passion to help with our beach cleanups. We grow through <strong>flyers and brochures</strong> that spread the word and invite more people to join. Our volunteers are the backbone of Pikathrift. Together we are building a movement that helps both <strong>people and the planet</strong>.</div>
         </section>
 
         {/* Journey */}
@@ -1419,7 +1508,7 @@ export default function Home() {
           <h2>🚀 Our Goals</h2>
           <div className="goals-list">
             <div className="goal-item reveal"><div className="goal-icon">🌊</div><p>Get many volunteers and clean beaches of textile waste, giving clothes a second life while helping the ocean.</p></div>
-            <div className="goal-item reveal"><div className="goal-icon">📈</div><p>Grow PikaThrift into a recognized organization so our positive impact on the oceans keeps expanding.</p></div>
+            <div className="goal-item reveal"><div className="goal-icon">📈</div><p>Grow Pikathrift into a recognized organization so our positive impact on the oceans keeps expanding.</p></div>
             <div className="goal-item reveal"><div className="goal-icon">♻️</div><p>Reinvest every dollar into upgrading our operations and increasing our environmental impact.</p></div>
           </div>
         </section>
@@ -1517,7 +1606,7 @@ export default function Home() {
         </div>
       </div>
 
-      <footer>&copy; 2026 PikaThrift. A student non-profit dedicated to ocean cleanup and affordable clothing.</footer>
+      <footer>&copy; 2026 Pikathrift. A student non-profit dedicated to ocean cleanup and affordable clothing.</footer>
 
       {/* Floating Buttons */}
       <button id="back-top">↑</button>
