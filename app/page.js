@@ -6,6 +6,8 @@ export default function Home() {
     let oceanAnimId = null;
     let gameAnimId = null;
     let confAnimId = null;
+    let introAnimId = null;
+    let introPrgIv = null;
     let spawnIv = null;
     let timerIv = null;
     let typeIv = null;
@@ -13,36 +15,121 @@ export default function Home() {
     let toastTimeout = null;
     let toastIv = null;
 
-    // ── INTRO VIDEO ──
-    const introOverlay = document.getElementById('intro-overlay');
-    const introVideo = document.getElementById('intro-video');
-    const introSkip = document.getElementById('intro-skip');
-    const introUnmute = document.getElementById('intro-unmute');
-    const introBar = document.getElementById('intro-bar');
+    // ── INTRO CINEMATIC SEQUENCE ──
+    const introOverlay  = document.getElementById('intro-overlay');
+    const introCanvas   = document.getElementById('intro-canvas');
+    const introSkip     = document.getElementById('intro-skip');
+    const introBar      = document.getElementById('intro-bar');
+    const introBarTop   = document.getElementById('intro-bar-top');
+    const introBarBot   = document.getElementById('intro-bar-bot');
+    const introScene1   = document.getElementById('intro-scene-1');
+    const introScene2   = document.getElementById('intro-scene-2');
+    const introScene3   = document.getElementById('intro-scene-3');
+    const introReveal   = document.getElementById('intro-logo-reveal');
+
+    const INTRO_MS = 10800;
+    const introT0  = performance.now();
+
+    // Particles for intro bg
+    const iParticles = Array.from({ length: 55 }, () => ({
+      x: Math.random(), y: Math.random(),
+      r: 0.8 + Math.random() * 2.4,
+      vy: 0.0014 + Math.random() * 0.0022,
+      alpha: 0.07 + Math.random() * 0.22,
+      wobble: Math.random() * Math.PI * 2,
+      wSpd: 0.014 + Math.random() * 0.022,
+    }));
+
+    function resizeIntroCanvas() {
+      if (introCanvas) { introCanvas.width = window.innerWidth; introCanvas.height = window.innerHeight; }
+    }
+    resizeIntroCanvas();
+    window.addEventListener('resize', resizeIntroCanvas);
+
+    function drawIntroFrame(ts) {
+      if (!introCanvas) return;
+      const ctx = introCanvas.getContext('2d');
+      const W = introCanvas.width, H = introCanvas.height;
+      const elapsed = ts - introT0, sec = elapsed / 1000;
+      const fadeIn = Math.min(elapsed / 700, 1);
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Deep ocean gradient
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, '#000810'); bg.addColorStop(0.3, '#001020');
+      bg.addColorStop(0.65, '#001c35'); bg.addColorStop(1, '#002848');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+      // Light rays
+      for (let i = 0; i < 7; i++) {
+        const rx = W * (0.06 + i * 0.145);
+        const ra = (0.011 + 0.007 * Math.sin(sec * 0.35 + i * 1.1)) * fadeIn;
+        const rw = 18 + Math.sin(sec * 0.28 + i) * 13;
+        const rg = ctx.createLinearGradient(rx, 0, rx, H * 0.9);
+        rg.addColorStop(0, `rgba(0,229,255,${ra})`);
+        rg.addColorStop(0.55, `rgba(0,160,220,${ra * 0.35})`);
+        rg.addColorStop(1, 'rgba(0,40,100,0)');
+        ctx.save(); ctx.beginPath();
+        ctx.moveTo(rx - rw, 0); ctx.lineTo(rx + rw, 0);
+        ctx.lineTo(rx + rw + 28, H); ctx.lineTo(rx - rw + 28, H);
+        ctx.closePath(); ctx.fillStyle = rg; ctx.fill(); ctx.restore();
+      }
+
+      // Rising bubble particles
+      iParticles.forEach(p => {
+        p.wobble += p.wSpd; p.y -= p.vy;
+        p.x += Math.sin(p.wobble) * 0.00028;
+        if (p.y < -0.02) { p.y = 1.02; p.x = Math.random(); }
+        ctx.save(); ctx.globalAlpha = p.alpha * fadeIn;
+        ctx.strokeStyle = 'rgba(0,229,255,0.75)'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(0,229,255,0.04)'; ctx.fill(); ctx.restore();
+      });
+
+      // Wave layers
+      for (let w = 0; w < 4; w++) {
+        ctx.beginPath(); ctx.moveTo(0, H * 0.63 + w * 15);
+        for (let x = 0; x <= W; x += 4) {
+          ctx.lineTo(x, H * 0.63 + w * 15 + Math.sin(x * 0.005 + sec * (0.65 + w * 0.22)) * (13 - w * 2.5));
+        }
+        ctx.strokeStyle = `rgba(0,229,255,${(0.07 - w * 0.014) * fadeIn})`;
+        ctx.lineWidth = 1.5; ctx.stroke();
+      }
+
+      introAnimId = requestAnimationFrame(drawIntroFrame);
+    }
 
     function dismissIntro() {
-      if (!introOverlay) return;
+      if (!introOverlay || introOverlay.classList.contains('out')) return;
       introOverlay.classList.add('out');
-      setTimeout(() => { if (introOverlay) introOverlay.style.display = 'none'; }, 950);
+      cancelAnimationFrame(introAnimId);
+      clearInterval(introPrgIv);
+      setTimeout(() => { if (introOverlay) introOverlay.style.display = 'none'; }, 960);
     }
 
-    if (introVideo) {
-      introVideo.play().catch(() => {});
-      introVideo.addEventListener('ended', dismissIntro);
-      introVideo.addEventListener('timeupdate', () => {
-        if (introBar && introVideo.duration) {
-          introBar.style.width = (introVideo.currentTime / introVideo.duration * 100) + '%';
-        }
-      });
-    }
+    introAnimId = requestAnimationFrame(drawIntroFrame);
+
+    introPrgIv = setInterval(() => {
+      const frac = (performance.now() - introT0) / INTRO_MS;
+      if (introBar) introBar.style.width = Math.min(frac * 100, 100) + '%';
+      if (frac >= 1) clearInterval(introPrgIv);
+    }, 50);
+
+    // Cinematic scene timeline
+    setTimeout(() => introScene1?.classList.add('show'),   350);
+    setTimeout(() => introScene1?.classList.remove('show'), 3700);
+    setTimeout(() => introScene2?.classList.add('show'),   4200);
+    setTimeout(() => introScene2?.classList.remove('show'), 6600);
+    setTimeout(() => introScene3?.classList.add('show'),   7000);
+    setTimeout(() => {
+      introScene3?.classList.remove('show');
+      introBarTop?.classList.add('out'); introBarBot?.classList.add('out');
+    }, 8000);
+    setTimeout(() => introReveal?.classList.add('show'), 8400);
+    setTimeout(dismissIntro, INTRO_MS);
+
     if (introSkip) introSkip.addEventListener('click', dismissIntro);
-    if (introUnmute) {
-      introUnmute.addEventListener('click', () => {
-        if (!introVideo) return;
-        introVideo.muted = !introVideo.muted;
-        introUnmute.textContent = introVideo.muted ? '🔇 Unmute' : '🔊 Mute';
-      });
-    }
 
     // ── REEL MODAL (30s) ──
     const videoModal = document.getElementById('video-modal');
@@ -933,9 +1020,11 @@ export default function Home() {
     }
 
     return () => {
+      cancelAnimationFrame(introAnimId);
       cancelAnimationFrame(oceanAnimId);
       cancelAnimationFrame(gameAnimId);
       cancelAnimationFrame(confAnimId);
+      clearInterval(introPrgIv);
       clearInterval(spawnIv);
       clearInterval(timerIv);
       clearInterval(typeIv);
@@ -951,15 +1040,44 @@ export default function Home() {
 
   return (
     <>
-      {/* Intro Video Overlay */}
+      {/* Cinematic Intro Sequence */}
       <div id="intro-overlay">
-        <video id="intro-video" src="/reel-10s.mp4" playsInline muted preload="auto" />
-        <div id="intro-logo">
-          <img src="/logo.png" alt="PikaThrift"/>
-          <span>PikaThrift</span>
+        <canvas id="intro-canvas"></canvas>
+
+        {/* Letterbox bars */}
+        <div id="intro-bar-top"></div>
+        <div id="intro-bar-bot"></div>
+
+        {/* Scene 1 — The problem */}
+        <div id="intro-scene-1" className="intro-scene">
+          <div className="intro-eyebrow">Every year</div>
+          <div className="intro-headline">11 million tonnes of plastic</div>
+          <div className="intro-sub">enter our oceans.</div>
         </div>
+
+        {/* Scene 2 — The cause */}
+        <div id="intro-scene-2" className="intro-scene">
+          <div className="intro-eyebrow">Where does it come from?</div>
+          <div className="intro-headline">35% from the clothes we wear.</div>
+          <div className="intro-sub">Washing one garment releases 700,000 microfibres.</div>
+        </div>
+
+        {/* Scene 3 — The solution */}
+        <div id="intro-scene-3" className="intro-scene">
+          <div className="intro-headline intro-green">We&apos;re changing that.</div>
+        </div>
+
+        {/* Logo reveal */}
+        <div id="intro-logo-reveal">
+          <div className="intro-ring ir1"></div>
+          <div className="intro-ring ir2"></div>
+          <div className="intro-ring ir3"></div>
+          <img src="/logo.png" alt="PikaThrift" id="intro-logo-img"/>
+          <div id="intro-brand">PikaThrift</div>
+          <div id="intro-tagline">Cleaning oceans. Clothing communities.</div>
+        </div>
+
         <div id="intro-controls">
-          <button id="intro-unmute">🔇 Unmute</button>
           <button id="intro-skip">Skip →</button>
         </div>
         <div id="intro-bar"></div>
