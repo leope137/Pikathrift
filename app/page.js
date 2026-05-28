@@ -1549,7 +1549,7 @@ export default function Home() {
             <div className="stat-card reveal"><div className="stat-num">1%</div><div className="stat-label">of all textiles are actually recycled</div></div>
             <div className="stat-card reveal"><div className="stat-num">35%</div><div className="stat-label">of ocean microplastics come from synthetic textiles</div></div>
             <div className="stat-card reveal"><div className="stat-num">25%</div><div className="stat-label">of new garments remain unsold due to overproduction</div></div>
-            <div className="stat-card reveal"><div className="stat-num">1.4</div><div className="stat-label">million trillion microfibres in our oceans</div></div>
+            <div className="stat-card reveal"><div className="stat-num">1.4</div><div className="stat-label">quintillion microfibres in our oceans</div></div>
           </div>
           <div className="quote-block reveal">"It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."<cite>Source: Fashion Revolution</cite></div>
           <div className="quote-block reveal" style={{marginTop:'14px'}}>The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people constantly throw away old clothes to keep up with trends — sending more textile waste into our oceans.</div>
