@@ -25,20 +25,60 @@ export default function Home() {
     const introScene1   = document.getElementById('intro-scene-1');
     const introScene2   = document.getElementById('intro-scene-2');
     const introScene3   = document.getElementById('intro-scene-3');
+    const introScene4   = document.getElementById('intro-scene-4');
     const introReveal   = document.getElementById('intro-logo-reveal');
 
-    const INTRO_MS = 10800;
+    const INTRO_MS = 15800;
     const introT0  = performance.now();
 
-    // Particles for intro bg
-    const iParticles = Array.from({ length: 55 }, () => ({
+    // 72 rising bubble particles
+    const iBubbles = Array.from({ length: 72 }, () => ({
       x: Math.random(), y: Math.random(),
-      r: 0.8 + Math.random() * 2.4,
-      vy: 0.0014 + Math.random() * 0.0022,
-      alpha: 0.07 + Math.random() * 0.22,
+      r: 0.6 + Math.random() * 2.8,
+      vy: 0.0012 + Math.random() * 0.0026,
+      alpha: 0.05 + Math.random() * 0.25,
       wobble: Math.random() * Math.PI * 2,
-      wSpd: 0.014 + Math.random() * 0.022,
+      wSpd: 0.012 + Math.random() * 0.024,
+      delay: Math.random() * 1800,
     }));
+
+    // 42 falling plastic debris pieces (irregular polygons, pre-calc vertex radii)
+    const iDebris = Array.from({ length: 42 }, () => {
+      const sides = 3 + Math.floor(Math.random() * 5);
+      return {
+        x: Math.random(), y: -Math.random() * 0.5,
+        vx: (Math.random() - 0.5) * 0.0006,
+        vy: 0.0004 + Math.random() * 0.001,
+        rot: Math.random() * Math.PI * 2,
+        rotSpd: (Math.random() - 0.5) * 0.022,
+        sides, verts: Array.from({ length: sides }, () => 0.7 + Math.random() * 0.3),
+        size: 3 + Math.random() * 9,
+        alpha: 0.1 + Math.random() * 0.35,
+        isLight: Math.random() < 0.5,
+      };
+    });
+
+    // 8 fish with staggered entry delays
+    const iFish = Array.from({ length: 8 }, (_, i) => ({
+      x: -0.12 - Math.random() * 0.15,
+      y: 0.3 + Math.random() * 0.5,
+      vx: 0.0018 + Math.random() * 0.0014,
+      vy: (Math.random() - 0.5) * 0.0004,
+      size: 10 + Math.random() * 14,
+      alpha: 0, delay: 1500 + i * 800,
+      hue: 180 + Math.random() * 60,
+      lit: 45 + Math.random() * 20,
+    }));
+
+    // 6 caustic light shimmer patches near the ocean floor
+    const iCaustics = Array.from({ length: 6 }, () => ({
+      x: Math.random(), yBase: 0.55 + Math.random() * 0.35,
+      r: 0.04 + Math.random() * 0.08,
+      phase: Math.random() * Math.PI * 2,
+      spd: 0.4 + Math.random() * 0.6,
+    }));
+
+    let flashAlpha = 0, flashDir = 0, cleanPct = 0;
 
     function resizeIntroCanvas() {
       if (introCanvas) { introCanvas.width = window.innerWidth; introCanvas.height = window.innerHeight; }
@@ -52,52 +92,146 @@ export default function Home() {
       const W = introCanvas.width, H = introCanvas.height;
       const elapsed = ts - introT0, sec = elapsed / 1000;
       const fadeIn = Math.min(elapsed / 700, 1);
+      cleanPct = Math.max(0, (elapsed - 11000) / 4000);
 
       ctx.clearRect(0, 0, W, H);
 
-      // Deep ocean gradient
+      // Deep ocean gradient — gradually brightens as intro moves to solution
       const bg = ctx.createLinearGradient(0, 0, 0, H);
-      bg.addColorStop(0, '#000810'); bg.addColorStop(0.3, '#001020');
-      bg.addColorStop(0.65, '#001c35'); bg.addColorStop(1, '#002848');
+      bg.addColorStop(0, `hsl(210,90%,${3 + cleanPct * 3}%)`);
+      bg.addColorStop(0.35, `hsl(210,85%,${6 + cleanPct * 4}%)`);
+      bg.addColorStop(1, `hsl(200,80%,${10 + cleanPct * 5}%)`);
       ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
-      // Light rays
-      for (let i = 0; i < 7; i++) {
-        const rx = W * (0.06 + i * 0.145);
-        const ra = (0.011 + 0.007 * Math.sin(sec * 0.35 + i * 1.1)) * fadeIn;
-        const rw = 18 + Math.sin(sec * 0.28 + i) * 13;
-        const rg = ctx.createLinearGradient(rx, 0, rx, H * 0.9);
+      // 9 animated light rays from above
+      for (let i = 0; i < 9; i++) {
+        const rx = W * (0.04 + i * 0.115);
+        const ra = (0.009 + 0.006 * Math.sin(sec * 0.32 + i * 1.05)) * fadeIn * (1 + cleanPct * 0.4);
+        const rw = 16 + Math.sin(sec * 0.26 + i) * 14;
+        const rg = ctx.createLinearGradient(rx, 0, rx, H * 0.92);
         rg.addColorStop(0, `rgba(0,229,255,${ra})`);
-        rg.addColorStop(0.55, `rgba(0,160,220,${ra * 0.35})`);
+        rg.addColorStop(0.5, `rgba(0,160,220,${ra * 0.3})`);
         rg.addColorStop(1, 'rgba(0,40,100,0)');
         ctx.save(); ctx.beginPath();
         ctx.moveTo(rx - rw, 0); ctx.lineTo(rx + rw, 0);
-        ctx.lineTo(rx + rw + 28, H); ctx.lineTo(rx - rw + 28, H);
+        ctx.lineTo(rx + rw + 30, H); ctx.lineTo(rx - rw + 30, H);
         ctx.closePath(); ctx.fillStyle = rg; ctx.fill(); ctx.restore();
       }
 
-      // Rising bubble particles
-      iParticles.forEach(p => {
-        p.wobble += p.wSpd; p.y -= p.vy;
-        p.x += Math.sin(p.wobble) * 0.00028;
-        if (p.y < -0.02) { p.y = 1.02; p.x = Math.random(); }
-        ctx.save(); ctx.globalAlpha = p.alpha * fadeIn;
-        ctx.strokeStyle = 'rgba(0,229,255,0.75)'; ctx.lineWidth = 0.8;
-        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(0,229,255,0.04)'; ctx.fill(); ctx.restore();
+      // Caustic light patches shimmering on the ocean floor
+      iCaustics.forEach(c => {
+        const cx = c.x * W;
+        const cy = (c.yBase + Math.sin(sec * c.spd + c.phase) * 0.02) * H;
+        const cr = c.r * W * (0.7 + 0.3 * Math.sin(sec * c.spd * 1.4 + c.phase));
+        const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+        cg.addColorStop(0, `rgba(0,229,255,${0.06 * fadeIn})`);
+        cg.addColorStop(1, 'rgba(0,80,160,0)');
+        ctx.save(); ctx.globalAlpha = fadeIn;
+        ctx.beginPath(); ctx.ellipse(cx, cy, cr, cr * 0.4, 0, 0, Math.PI * 2);
+        ctx.fillStyle = cg; ctx.fill(); ctx.restore();
       });
 
-      // Wave layers
-      for (let w = 0; w < 4; w++) {
-        ctx.beginPath(); ctx.moveTo(0, H * 0.63 + w * 15);
-        for (let x = 0; x <= W; x += 4) {
-          ctx.lineTo(x, H * 0.63 + w * 15 + Math.sin(x * 0.005 + sec * (0.65 + w * 0.22)) * (13 - w * 2.5));
-        }
-        ctx.strokeStyle = `rgba(0,229,255,${(0.07 - w * 0.014) * fadeIn})`;
-        ctx.lineWidth = 1.5; ctx.stroke();
+      // Plastic debris falling — fades out as intro transitions to solution
+      const debrisFade = Math.max(0, 1 - cleanPct * 2);
+      if (debrisFade > 0.005) {
+        iDebris.forEach(d => {
+          d.y += d.vy; d.x += d.vx; d.rot += d.rotSpd;
+          if (d.y > 1.05) { d.y = -0.05; d.x = Math.random(); }
+          ctx.save();
+          ctx.globalAlpha = d.alpha * fadeIn * debrisFade;
+          ctx.translate(d.x * W, d.y * H);
+          ctx.rotate(d.rot);
+          ctx.beginPath();
+          for (let s = 0; s < d.sides; s++) {
+            const angle = (s / d.sides) * Math.PI * 2;
+            const px = Math.cos(angle) * d.size * d.verts[s];
+            const py = Math.sin(angle) * d.size * d.verts[s];
+            s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = d.isLight ? 'rgba(180,200,220,0.9)' : 'rgba(80,140,200,0.9)';
+          ctx.strokeStyle = 'rgba(100,160,220,0.55)'; ctx.lineWidth = 0.8;
+          ctx.fill(); ctx.stroke(); ctx.restore();
+        });
       }
 
+      // Fish swimming through the scene
+      iFish.forEach(f => {
+        if (elapsed < f.delay) return;
+        f.x += f.vx; f.y += f.vy;
+        f.alpha = Math.min(f.alpha + 0.012, 0.65 + cleanPct * 0.3);
+        if (f.x > 1.15) { f.x = -0.15; f.y = 0.3 + Math.random() * 0.5; f.alpha = 0; }
+        const fc = `hsl(${f.hue},70%,${f.lit}%)`;
+        ctx.save(); ctx.globalAlpha = f.alpha * fadeIn;
+        ctx.translate(f.x * W, f.y * H);
+        ctx.beginPath(); ctx.ellipse(0, 0, f.size, f.size * 0.42, 0, 0, Math.PI * 2);
+        ctx.fillStyle = fc; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-f.size, 0);
+        ctx.lineTo(-f.size * 1.6, -f.size * 0.4); ctx.lineTo(-f.size * 1.6, f.size * 0.4);
+        ctx.closePath(); ctx.fillStyle = fc; ctx.fill();
+        ctx.beginPath(); ctx.arc(f.size * 0.55, -f.size * 0.06, f.size * 0.12, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore();
+      });
+
+      // 72 rising bubble particles
+      iBubbles.forEach(p => {
+        if (elapsed < p.delay) return;
+        p.wobble += p.wSpd; p.y -= p.vy;
+        p.x += Math.sin(p.wobble) * 0.00025;
+        if (p.y < -0.02) { p.y = 1.02; p.x = Math.random(); }
+        ctx.save(); ctx.globalAlpha = p.alpha * fadeIn;
+        ctx.strokeStyle = 'rgba(0,229,255,0.75)'; ctx.lineWidth = 0.75;
+        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(0,229,255,0.035)'; ctx.fill(); ctx.restore();
+      });
+
+      // 5 wave layers
+      for (let w = 0; w < 5; w++) {
+        ctx.beginPath(); ctx.moveTo(0, H * 0.6 + w * 14);
+        for (let x = 0; x <= W; x += 4) {
+          ctx.lineTo(x, H * 0.6 + w * 14 + Math.sin(x * 0.005 + sec * (0.6 + w * 0.2)) * (14 - w * 2));
+        }
+        ctx.strokeStyle = `rgba(0,229,255,${(0.08 - w * 0.012) * fadeIn * (1 + cleanPct * 0.3)})`;
+        ctx.lineWidth = 1.4; ctx.stroke();
+      }
+
+      // Cyan radial flash between problem scenes and solution
+      if (flashDir !== 0) {
+        flashAlpha += flashDir * 0.055;
+        if (flashAlpha >= 1) { flashAlpha = 1; flashDir = -1; }
+        if (flashAlpha <= 0) { flashAlpha = 0; flashDir = 0; }
+      }
+      if (flashAlpha > 0) {
+        const fg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
+        fg.addColorStop(0, `rgba(0,229,255,${flashAlpha * 0.8})`);
+        fg.addColorStop(0.5, `rgba(0,100,200,${flashAlpha * 0.4})`);
+        fg.addColorStop(1, 'rgba(0,20,60,0)');
+        ctx.save(); ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H); ctx.restore();
+      }
+
+      // Vignette darkens edges
+      const vg = ctx.createRadialGradient(W / 2, H / 2, W * 0.28, W / 2, H / 2, W * 0.78);
+      vg.addColorStop(0, 'rgba(0,0,0,0)');
+      vg.addColorStop(1, 'rgba(0,0,8,0.62)');
+      ctx.save(); ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H); ctx.restore();
+
       introAnimId = requestAnimationFrame(drawIntroFrame);
+    }
+
+    function animIntroStat(id, target, duration, delay) {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const t0 = performance.now();
+        (function tick() {
+          const prog = Math.min((performance.now() - t0) / duration, 1);
+          const ease = 1 - Math.pow(1 - prog, 4);
+          el.textContent = target >= 1000000
+            ? (ease * target / 1000000).toFixed(1) + 'M'
+            : Math.round(ease * target).toString();
+          if (prog < 1) requestAnimationFrame(tick);
+        })();
+      }, delay);
     }
 
     function dismissIntro() {
@@ -116,17 +250,23 @@ export default function Home() {
       if (frac >= 1) clearInterval(introPrgIv);
     }, 50);
 
-    // Cinematic scene timeline
-    setTimeout(() => introScene1?.classList.add('show'),   350);
-    setTimeout(() => introScene1?.classList.remove('show'), 3700);
-    setTimeout(() => introScene2?.classList.add('show'),   4200);
-    setTimeout(() => introScene2?.classList.remove('show'), 6600);
-    setTimeout(() => introScene3?.classList.add('show'),   7000);
+    // Cinematic scene timeline — 4 scenes over 15.8 seconds
+    setTimeout(() => introScene1?.classList.add('show'), 350);
+    animIntroStat('istat1', 11000000, 2200, 450);
+    setTimeout(() => introScene1?.classList.remove('show'), 4000);
+    setTimeout(() => introScene2?.classList.add('show'), 4450);
+    animIntroStat('istat2', 35, 1400, 4550);
+    setTimeout(() => introScene2?.classList.remove('show'), 7700);
+    setTimeout(() => introScene3?.classList.add('show'), 8100);
+    animIntroStat('istat3', 10, 1200, 8200);
+    setTimeout(() => introScene3?.classList.remove('show'), 10500);
+    setTimeout(() => { flashDir = 1; }, 10700);
+    setTimeout(() => introScene4?.classList.add('show'), 11000);
     setTimeout(() => {
-      introScene3?.classList.remove('show');
+      introScene4?.classList.remove('show');
       introBarTop?.classList.add('out'); introBarBot?.classList.add('out');
-    }, 8000);
-    setTimeout(() => introReveal?.classList.add('show'), 8400);
+    }, 12500);
+    setTimeout(() => introReveal?.classList.add('show'), 12800);
     setTimeout(dismissIntro, INTRO_MS);
 
     if (introSkip) introSkip.addEventListener('click', dismissIntro);
@@ -1048,23 +1188,42 @@ export default function Home() {
         <div id="intro-bar-top"></div>
         <div id="intro-bar-bot"></div>
 
-        {/* Scene 1 — The problem */}
+        {/* Scene 1 — Scale of the problem */}
         <div id="intro-scene-1" className="intro-scene">
-          <div className="intro-eyebrow">Every year</div>
-          <div className="intro-headline">11 million tonnes of plastic</div>
-          <div className="intro-sub">enter our oceans.</div>
+          <div className="intro-eyebrow">Every single year</div>
+          <div className="intro-stat-line">
+            <span className="intro-stat intro-cyan" id="istat1">0</span>
+          </div>
+          <div className="intro-headline">tonnes of plastic</div>
+          <div className="intro-sub">enter our oceans — and it&apos;s accelerating.</div>
         </div>
 
-        {/* Scene 2 — The cause */}
+        {/* Scene 2 — The clothing cause */}
         <div id="intro-scene-2" className="intro-scene">
-          <div className="intro-eyebrow">Where does it come from?</div>
-          <div className="intro-headline">35% from the clothes we wear.</div>
-          <div className="intro-sub">Washing one garment releases 700,000 microfibres.</div>
+          <div className="intro-eyebrow">The clothes we wear are responsible for</div>
+          <div className="intro-stat-line">
+            <span className="intro-stat intro-cyan" id="istat2">0</span>
+            <span className="intro-stat-unit">%</span>
+          </div>
+          <div className="intro-headline">of all ocean microplastics.</div>
+          <div className="intro-sub">One wash cycle releases up to 700,000 microfibres.</div>
         </div>
 
-        {/* Scene 3 — The solution */}
+        {/* Scene 3 — Carbon cost of fashion */}
         <div id="intro-scene-3" className="intro-scene">
-          <div className="intro-headline intro-green">We&apos;re changing that.</div>
+          <div className="intro-eyebrow">The fashion industry produces</div>
+          <div className="intro-stat-line">
+            <span className="intro-stat intro-red" id="istat3">0</span>
+            <span className="intro-stat-unit">%</span>
+          </div>
+          <div className="intro-headline">of global carbon emissions.</div>
+          <div className="intro-sub">More than aviation and shipping combined.</div>
+        </div>
+
+        {/* Scene 4 — The solution */}
+        <div id="intro-scene-4" className="intro-scene">
+          <div className="intro-turn">We&apos;re doing something about it.</div>
+          <div className="intro-turn-sub">Student-run · Beach-based · SDG Goal 12</div>
         </div>
 
         {/* Logo reveal */}
@@ -1072,9 +1231,12 @@ export default function Home() {
           <div className="intro-ring ir1"></div>
           <div className="intro-ring ir2"></div>
           <div className="intro-ring ir3"></div>
+          <div className="intro-ring ir4"></div>
           <img src="/logo.png" alt="PikaThrift" id="intro-logo-img"/>
           <div id="intro-brand">PikaThrift</div>
+          <div id="intro-sdg">🎯 UN SDG Goal 12 · Responsible Consumption</div>
           <div id="intro-tagline">Cleaning oceans. Clothing communities.</div>
+          <div id="intro-tagline2">One pound at a time.</div>
         </div>
 
         <div id="intro-controls">
