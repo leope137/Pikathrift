@@ -309,10 +309,16 @@ export default function Home() {
       startTyping();
     }
 
-    // ── CURSOR GLOW ──
+    // ── CURSOR GLOW + HERO PARALLAX ──
     const glowEl = document.getElementById('cursor-glow');
+    const heroContent = document.querySelector('.hero-content');
     const onMouseMove = e => {
       if (glowEl) { glowEl.style.left = e.clientX + 'px'; glowEl.style.top = e.clientY + 'px'; }
+      if (heroContent) {
+        const cx = (e.clientX / window.innerWidth - 0.5);
+        const cy = (e.clientY / window.innerHeight - 0.5);
+        heroContent.style.transform = `translate(${cx * 14}px, ${cy * 9}px)`;
+      }
     };
     document.addEventListener('mousemove', onMouseMove);
 
@@ -366,7 +372,7 @@ export default function Home() {
     const canvas = document.getElementById('ocean-canvas');
     if (canvas) {
       const ctx = canvas.getContext('2d');
-      let W, H, fish = [], bubbles = [], rays = [], oceanRipples = [];
+      let W, H, fish = [], bubbles = [], rays = [], oceanRipples = [], jellies = [], bioParts = [];
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -375,54 +381,114 @@ export default function Home() {
       }
 
       function initScene() {
-        fish = Array.from({ length: 14 }, () => ({
-          x: Math.random() * W, y: 80 + Math.random() * (H * 0.5),
-          size: 8 + Math.random() * 14, speed: 0.4 + Math.random() * 0.8,
+        fish = Array.from({ length: 20 }, () => ({
+          x: Math.random() * W, y: 80 + Math.random() * (H * 0.55),
+          size: 7 + Math.random() * 16, speed: 0.35 + Math.random() * 0.9,
           dir: Math.random() > 0.5 ? 1 : -1,
-          col: `hsl(${185 + Math.random() * 30},80%,${55 + Math.random() * 20}%)`,
-          wave: Math.random() * Math.PI * 2, waveSpeed: 0.015 + Math.random() * 0.02
+          col: `hsl(${180 + Math.random() * 50},80%,${50 + Math.random() * 25}%)`,
+          wave: Math.random() * Math.PI * 2, waveSpeed: 0.013 + Math.random() * 0.022
         }));
-        bubbles = Array.from({ length: 35 }, () => ({
-          x: Math.random() * W, y: H * 0.3 + Math.random() * H * 0.7,
-          r: 1.5 + Math.random() * 5.5, speed: 0.3 + Math.random() * 0.7,
-          alpha: 0.15 + Math.random() * 0.45,
-          wobble: Math.random() * Math.PI * 2, wobbleSpeed: 0.02 + Math.random() * 0.03
+        bubbles = Array.from({ length: 50 }, () => ({
+          x: Math.random() * W, y: H * 0.2 + Math.random() * H * 0.8,
+          r: 1.2 + Math.random() * 6, speed: 0.25 + Math.random() * 0.8,
+          alpha: 0.12 + Math.random() * 0.5,
+          wobble: Math.random() * Math.PI * 2, wobbleSpeed: 0.018 + Math.random() * 0.03
         }));
-        rays = Array.from({ length: 7 }, () => ({
-          x: Math.random() * W, angle: -0.15 + Math.random() * 0.3,
-          width: 25 + Math.random() * 55, alpha: 0.015 + Math.random() * 0.035,
-          speed: 0.002 + Math.random() * 0.003, phase: Math.random() * Math.PI * 2
+        rays = Array.from({ length: 10 }, () => ({
+          x: Math.random() * W, angle: -0.18 + Math.random() * 0.36,
+          width: 20 + Math.random() * 65, alpha: 0.016 + Math.random() * 0.04,
+          speed: 0.0018 + Math.random() * 0.003, phase: Math.random() * Math.PI * 2
+        }));
+        jellies = Array.from({ length: 4 }, () => ({
+          x: Math.random() * W, y: H * 0.2 + Math.random() * H * 0.5,
+          size: 18 + Math.random() * 22, vy: 0.1 + Math.random() * 0.18,
+          vx: (Math.random() - 0.5) * 0.22,
+          pulse: Math.random() * Math.PI * 2, pulseSpeed: 0.016 + Math.random() * 0.018,
+          alpha: 0.22 + Math.random() * 0.3, hue: 195 + Math.random() * 100,
+        }));
+        bioParts = Array.from({ length: 45 }, () => ({
+          x: Math.random() * W, y: Math.random() * H,
+          r: 0.5 + Math.random() * 2, alpha: 0,
+          maxAlpha: 0.12 + Math.random() * 0.5,
+          phase: Math.random() * Math.PI * 2, speed: 0.011 + Math.random() * 0.018,
+          vy: -0.06 - Math.random() * 0.16, drift: (Math.random() - 0.5) * 0.22,
         }));
       }
 
       function drawFish(f) {
         ctx.save(); ctx.translate(f.x, f.y);
         if (f.dir < 0) ctx.scale(-1, 1);
-        ctx.fillStyle = f.col; ctx.shadowColor = f.col; ctx.shadowBlur = 8;
-        ctx.beginPath(); ctx.ellipse(0, 0, f.size, f.size * 0.55, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-f.size * 0.9, 0); ctx.lineTo(-f.size * 1.6, -f.size * 0.6); ctx.lineTo(-f.size * 1.6, f.size * 0.6); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = f.col; ctx.shadowColor = f.col; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.ellipse(0, 0, f.size, f.size * 0.52, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-f.size * 0.9, 0); ctx.lineTo(-f.size * 1.65, -f.size * 0.65); ctx.lineTo(-f.size * 1.65, f.size * 0.65); ctx.closePath(); ctx.fill();
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.beginPath(); ctx.arc(f.size * 0.5, -f.size * 0.1, f.size * 0.14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(f.size * 0.5, -f.size * 0.1, f.size * 0.13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.beginPath(); ctx.arc(f.size * 0.5, -f.size * 0.12, f.size * 0.045, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      function drawJelly(j) {
+        const pulse = Math.sin(j.pulse);
+        const rX = j.size * (1 + pulse * 0.18);
+        const rY = j.size * 0.46 * (1 - pulse * 0.22);
+        ctx.save(); ctx.globalAlpha = j.alpha;
+        ctx.shadowColor = `hsl(${j.hue},85%,65%)`; ctx.shadowBlur = 24;
+        ctx.fillStyle = `hsla(${j.hue},70%,62%,0.5)`;
+        ctx.beginPath(); ctx.ellipse(j.x, j.y, rX, rY, 0, Math.PI, 0); ctx.fill();
+        ctx.fillStyle = `hsla(${j.hue},90%,88%,0.18)`;
+        ctx.beginPath(); ctx.ellipse(j.x, j.y - rY * 0.1, rX * 0.55, rY * 0.5, 0, Math.PI, 0); ctx.fill();
+        ctx.strokeStyle = `hsla(${j.hue},70%,72%,0.28)`; ctx.lineWidth = 1; ctx.shadowBlur = 8;
+        for (let k = 0; k < 7; k++) {
+          const tx = j.x - rX * 0.72 + (k / 6) * rX * 1.44;
+          const tLen = 16 + (k % 3) * 9;
+          ctx.beginPath(); ctx.moveTo(tx, j.y);
+          for (let ty = 0; ty < tLen; ty += 3) {
+            ctx.lineTo(tx + Math.sin(ty * 0.34 + t * 2.1 + k * 0.95) * 5, j.y + ty);
+          }
+          ctx.stroke();
+        }
         ctx.restore();
       }
 
       let t = 0;
       canvas.addEventListener('click', e => {
-        oceanRipples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 0.6 });
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => oceanRipples.push({ x: e.clientX, y: e.clientY, r: i * 10, alpha: 0.6 - i * 0.15 }), i * 80);
+        }
       });
 
       function drawOcean() {
         t += 0.01; ctx.clearRect(0, 0, W, H);
         const grad = ctx.createLinearGradient(0, 0, 0, H);
-        grad.addColorStop(0, '#001020'); grad.addColorStop(0.3, '#001f3f');
-        grad.addColorStop(0.65, '#003d6b'); grad.addColorStop(1, '#004e7c');
+        grad.addColorStop(0, '#000c1a'); grad.addColorStop(0.25, '#001830');
+        grad.addColorStop(0.6, '#003560'); grad.addColorStop(1, '#004878');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
 
+        // Seaweed at bottom
+        for (let sw = 0; sw < 8; sw++) {
+          const sx = W * (0.04 + sw * 0.135);
+          const swH = 32 + Math.sin(sw * 2.4) * 18;
+          ctx.save();
+          ctx.strokeStyle = `rgba(0,${130 + sw * 9},${55 + sw * 4},${0.3 + Math.sin(sw) * 0.1})`;
+          ctx.lineWidth = 1.8 + sw % 3; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(sx, H);
+          for (let s = 1; s <= 6; s++) {
+            const sy = H - (s / 6) * swH;
+            ctx.quadraticCurveTo(
+              sx + Math.sin(t * (0.55 + sw * 0.1) + s * 0.9) * (3 + s * 1.8), sy + swH / 6 * 0.6,
+              sx + Math.sin(t * (0.55 + sw * 0.1) + s * 0.9 + 0.4) * (3 + s * 1.8), sy
+            );
+          }
+          ctx.stroke(); ctx.restore();
+        }
+
+        // Light rays
         rays.forEach(r => {
           r.phase += r.speed;
-          const a = r.alpha * (0.6 + 0.4 * Math.sin(r.phase));
+          const a = r.alpha * (0.55 + 0.45 * Math.sin(r.phase));
           const g = ctx.createLinearGradient(r.x, 0, r.x + Math.tan(r.angle) * H, H);
-          g.addColorStop(0, `rgba(100,220,255,${a})`); g.addColorStop(1, 'rgba(100,220,255,0)');
+          g.addColorStop(0, `rgba(100,225,255,${a})`); g.addColorStop(0.6, `rgba(60,180,240,${a * 0.4})`); g.addColorStop(1, 'rgba(0,80,160,0)');
           ctx.save(); ctx.beginPath();
           ctx.moveTo(r.x - r.width / 2, 0); ctx.lineTo(r.x + r.width / 2, 0);
           ctx.lineTo(r.x + r.width / 2 + Math.tan(r.angle) * H, H);
@@ -430,46 +496,73 @@ export default function Home() {
           ctx.closePath(); ctx.fillStyle = g; ctx.fill(); ctx.restore();
         });
 
+        // Bubbles
         bubbles.forEach(b => {
           b.wobble += b.wobbleSpeed; b.y -= b.speed; b.x += Math.sin(b.wobble) * 0.5;
           if (b.y < -10) { b.y = H + 10; b.x = Math.random() * W; }
           ctx.save(); ctx.globalAlpha = b.alpha;
-          ctx.strokeStyle = 'rgba(100,220,255,0.8)'; ctx.lineWidth = 1;
+          ctx.strokeStyle = 'rgba(100,220,255,0.75)'; ctx.lineWidth = 1;
           ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.stroke();
-          ctx.fillStyle = 'rgba(100,220,255,0.07)'; ctx.fill(); ctx.restore();
+          ctx.fillStyle = 'rgba(100,220,255,0.06)'; ctx.fill(); ctx.restore();
         });
 
+        // Bioluminescent motes
+        bioParts.forEach(p => {
+          p.phase += p.speed; p.y += p.vy; p.x += p.drift;
+          p.alpha = p.maxAlpha * (0.3 + 0.7 * Math.abs(Math.sin(p.phase)));
+          if (p.y < 0) { p.y = H; p.x = Math.random() * W; }
+          if (p.x < 0 || p.x > W) p.drift = -p.drift;
+          ctx.save(); ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = 'rgba(80,255,200,0.9)';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        });
+
+        // Fish
         fish.forEach(f => {
-          f.wave += f.waveSpeed; f.x += f.speed * f.dir; f.y += Math.sin(f.wave) * 0.35;
-          if (f.x > W + 60) { f.x = -60; f.dir = 1; }
-          if (f.x < -60) { f.x = W + 60; f.dir = -1; }
+          f.wave += f.waveSpeed; f.x += f.speed * f.dir; f.y += Math.sin(f.wave) * 0.4;
+          if (f.x > W + 65) { f.x = -65; f.dir = 1; }
+          if (f.x < -65) { f.x = W + 65; f.dir = -1; }
           drawFish(f);
         });
 
+        // Jellyfish
+        jellies.forEach(j => {
+          j.pulse += j.pulseSpeed;
+          j.y -= j.vy * (0.65 + 0.35 * Math.sin(j.pulse * 2));
+          j.x += j.vx;
+          if (j.y < -j.size * 3) { j.y = H + j.size; j.x = Math.random() * W; }
+          if (j.x < -50 || j.x > W + 50) j.vx = -j.vx;
+          drawJelly(j);
+        });
+
+        // Click ripples
         oceanRipples = oceanRipples.filter(r => {
-          r.r += 3; r.alpha -= 0.018;
+          r.r += 2.8; r.alpha -= 0.016;
           ctx.save(); ctx.globalAlpha = Math.max(0, r.alpha);
-          ctx.strokeStyle = 'rgba(100,220,255,0.8)'; ctx.lineWidth = 2;
+          ctx.strokeStyle = 'rgba(100,220,255,0.85)'; ctx.lineWidth = 1.8;
           ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.stroke();
           ctx.restore();
           return r.alpha > 0;
         });
 
-        for (let i = 0; i < 3; i++) {
-          ctx.beginPath(); ctx.moveTo(0, H * 0.28 + i * 8);
+        // Surface wave lines
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath(); ctx.moveTo(0, H * 0.27 + i * 9);
           for (let x = 0; x < W; x += 4) {
-            ctx.lineTo(x, H * 0.28 + i * 8 + Math.sin(x * 0.008 + t * (1 + i * 0.3)) * (10 - i * 3));
+            ctx.lineTo(x, H * 0.27 + i * 9 + Math.sin(x * 0.008 + t * (1 + i * 0.28)) * (11 - i * 2.5));
           }
-          ctx.strokeStyle = `rgba(100,220,255,${0.07 - i * 0.02})`; ctx.lineWidth = 1.5; ctx.stroke();
+          ctx.strokeStyle = `rgba(100,220,255,${0.08 - i * 0.016})`; ctx.lineWidth = 1.5; ctx.stroke();
         }
 
+        // Deep bottom fog
         ctx.beginPath(); ctx.moveTo(0, H);
         for (let x = 0; x <= W; x += 4) {
-          ctx.lineTo(x, H * 0.75 + Math.sin(x * 0.006 + t * 0.8) * 15 + Math.sin(x * 0.012 - t) * 8);
+          ctx.lineTo(x, H * 0.73 + Math.sin(x * 0.006 + t * 0.75) * 18 + Math.sin(x * 0.013 - t * 1.1) * 9);
         }
         ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-        const sg = ctx.createLinearGradient(0, H * 0.7, 0, H);
-        sg.addColorStop(0, 'rgba(0,50,90,0)'); sg.addColorStop(1, 'rgba(0,20,40,0.8)');
+        const sg = ctx.createLinearGradient(0, H * 0.68, 0, H);
+        sg.addColorStop(0, 'rgba(0,40,75,0)'); sg.addColorStop(1, 'rgba(0,15,35,0.85)');
         ctx.fillStyle = sg; ctx.fill();
 
         oceanAnimId = requestAnimationFrame(drawOcean);
@@ -520,21 +613,41 @@ export default function Home() {
       card.addEventListener('mouseleave', ml);
     });
 
-    // ── CLICK RIPPLE ──
+    // ── CLICK RIPPLE (multi-ring) ──
     const onClickRipple = e => {
-      const r = document.createElement('div');
-      Object.assign(r.style, {
-        position: 'fixed', left: e.clientX - 20 + 'px', top: e.clientY - 20 + 'px',
-        width: '40px', height: '40px', borderRadius: '50%',
-        border: '2px solid rgba(0,229,255,0.6)', pointerEvents: 'none',
-        zIndex: '9997', transform: 'scale(0)', opacity: '1',
-        transition: 'transform 0.5s ease,opacity 0.5s ease'
+      [0, 90, 180].forEach((delay, i) => {
+        setTimeout(() => {
+          const sz = 36 + i * 22;
+          const r = document.createElement('div');
+          Object.assign(r.style, {
+            position: 'fixed', left: (e.clientX - sz / 2) + 'px', top: (e.clientY - sz / 2) + 'px',
+            width: sz + 'px', height: sz + 'px', borderRadius: '50%',
+            border: `${2 - i * 0.5}px solid rgba(0,229,255,${0.7 - i * 0.2})`,
+            pointerEvents: 'none', zIndex: '9997', transform: 'scale(0)', opacity: '1',
+            transition: `transform ${0.55 + i * 0.08}s ease, opacity ${0.55 + i * 0.08}s ease`,
+          });
+          document.body.appendChild(r);
+          requestAnimationFrame(() => { r.style.transform = 'scale(5)'; r.style.opacity = '0'; });
+          setTimeout(() => r.remove(), 700 + i * 100);
+        }, delay);
       });
-      document.body.appendChild(r);
-      requestAnimationFrame(() => { r.style.transform = 'scale(4)'; r.style.opacity = '0'; });
-      setTimeout(() => r.remove(), 600);
     };
     document.addEventListener('click', onClickRipple);
+
+    // ── MAGNETIC BUTTONS ──
+    document.querySelectorAll('.hero-btn, .contact-btn, #start-btn, .reel-btn').forEach(btn => {
+      btn.addEventListener('mouseenter', () => { btn.style.transition = 'transform 0s, box-shadow 0.2s'; });
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const cx = (e.clientX - r.left - r.width / 2);
+        const cy = (e.clientY - r.top - r.height / 2);
+        btn.style.transform = `translate(${cx * 0.22}px, ${cy * 0.28}px) scale(1.04)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transition = 'transform 0.45s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s';
+        btn.style.transform = '';
+      });
+    });
 
     // ── LOGO EASTER EGG ──
     let logoClickCount = 0;
@@ -1436,7 +1549,7 @@ export default function Home() {
             <div className="stat-card reveal"><div className="stat-num">1%</div><div className="stat-label">of all textiles are actually recycled</div></div>
             <div className="stat-card reveal"><div className="stat-num">35%</div><div className="stat-label">of ocean microplastics come from synthetic textiles</div></div>
             <div className="stat-card reveal"><div className="stat-num">25%</div><div className="stat-label">of new garments remain unsold due to overproduction</div></div>
-            <div className="stat-card reveal"><div className="stat-num">1.4M</div><div className="stat-label">trillion microfibres currently in our oceans</div></div>
+            <div className="stat-card reveal"><div className="stat-num">1.4</div><div className="stat-label">million trillion microfibres in our oceans</div></div>
           </div>
           <div className="quote-block reveal">"It has been estimated that 1.4 million trillion microfibres are currently in the oceans and if the fashion industry continues in a business-as-usual scenario, between 2015 and 2050, 22 million tonnes of microfibres will enter our oceans."<cite>Source: Fashion Revolution</cite></div>
           <div className="quote-block reveal" style={{marginTop:'14px'}}>The fast fashion industry mass produces trendy, low-cost clothing. As it grows, more people constantly throw away old clothes to keep up with trends — sending more textile waste into our oceans.</div>
