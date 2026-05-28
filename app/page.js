@@ -13,6 +13,58 @@ export default function Home() {
     let toastTimeout = null;
     let toastIv = null;
 
+    // ── INTRO VIDEO ──
+    const introOverlay = document.getElementById('intro-overlay');
+    const introVideo = document.getElementById('intro-video');
+    const introSkip = document.getElementById('intro-skip');
+    const introUnmute = document.getElementById('intro-unmute');
+    const introBar = document.getElementById('intro-bar');
+
+    function dismissIntro() {
+      if (!introOverlay) return;
+      introOverlay.classList.add('out');
+      setTimeout(() => { if (introOverlay) introOverlay.style.display = 'none'; }, 950);
+    }
+
+    if (introVideo) {
+      introVideo.play().catch(() => {});
+      introVideo.addEventListener('ended', dismissIntro);
+      introVideo.addEventListener('timeupdate', () => {
+        if (introBar && introVideo.duration) {
+          introBar.style.width = (introVideo.currentTime / introVideo.duration * 100) + '%';
+        }
+      });
+    }
+    if (introSkip) introSkip.addEventListener('click', dismissIntro);
+    if (introUnmute) {
+      introUnmute.addEventListener('click', () => {
+        if (!introVideo) return;
+        introVideo.muted = !introVideo.muted;
+        introUnmute.textContent = introVideo.muted ? '🔇 Unmute' : '🔊 Mute';
+      });
+    }
+
+    // ── REEL MODAL (30s) ──
+    const videoModal = document.getElementById('video-modal');
+    const modalVideo = document.getElementById('modal-video');
+    const modalClose = document.getElementById('modal-close');
+    const watchReelBtn = document.getElementById('watch-reel-btn');
+
+    function openModal() {
+      if (!videoModal) return;
+      videoModal.classList.add('open');
+      if (modalVideo) { modalVideo.currentTime = 0; modalVideo.play().catch(() => {}); }
+    }
+    function closeModal() {
+      if (!videoModal) return;
+      videoModal.classList.remove('open');
+      if (modalVideo) modalVideo.pause();
+    }
+
+    if (watchReelBtn) watchReelBtn.addEventListener('click', openModal);
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (videoModal) videoModal.addEventListener('click', e => { if (e.target === videoModal) closeModal(); });
+
     // ── LOADING SCREEN ──
     const bar = document.getElementById('loader-bar');
     const pct = document.getElementById('loader-pct');
@@ -209,10 +261,15 @@ export default function Home() {
           e.target.classList.add('visible');
           const num = e.target.querySelector('[data-target]');
           if (num && !num.dataset.counted) { num.dataset.counted = '1'; animateCount(num); }
+          if (!e.target.dataset.chimed) { e.target.dataset.chimed = '1'; playRevealChime(); }
         }
       });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    document.querySelectorAll('nav a, .hero-btn, .contact-btn, #back-top, #start-btn').forEach(el => {
+      el.addEventListener('click', playUiClick);
+    });
 
     function animateCount(el) {
       const target = +el.dataset.target, prefix = el.dataset.prefix || '', suffix = el.dataset.suffix || '';
@@ -287,6 +344,7 @@ export default function Home() {
 
     // ── WEB AUDIO ──
     let audioCtx = null, soundOn = false, oceanGain = null;
+    let ambientGain = null, ambientScheduler = null;
     const soundBtn = document.getElementById('sound-btn');
 
     function initAudio() {
@@ -327,12 +385,78 @@ export default function Home() {
         soundBtn.textContent = soundOn ? '🔊' : '🔇';
         soundBtn.classList.toggle('on', soundOn);
         if (soundOn) {
-          if (!audioCtx) createOceanSound();
-          else if (oceanGain) { oceanGain.gain.cancelScheduledValues(audioCtx.currentTime); oceanGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.5); }
-        } else if (oceanGain) {
-          oceanGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+          if (!audioCtx) { createOceanSound(); startAmbientMusic(); }
+          else {
+            if (oceanGain) { oceanGain.gain.cancelScheduledValues(audioCtx.currentTime); oceanGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.5); }
+            startAmbientMusic();
+          }
+        } else {
+          if (oceanGain) oceanGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+          stopAmbientMusic();
         }
+        playUiClick();
       });
+    }
+
+    // ── UI + AMBIENT SOUNDS ──
+    function playUiClick() {
+      if (!audioCtx) return;
+      try {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type = 'sine'; o.frequency.value = 1100;
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+        o.start(); o.stop(audioCtx.currentTime + 0.07);
+      } catch(e) {}
+    }
+
+    function playRevealChime() {
+      if (!audioCtx) return;
+      try {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type = 'sine'; o.frequency.value = 880;
+        g.gain.setValueAtTime(0, audioCtx.currentTime);
+        g.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.65);
+        o.start(); o.stop(audioCtx.currentTime + 0.65);
+      } catch(e) {}
+    }
+
+    function startAmbientMusic() {
+      initAudio();
+      if (!audioCtx || ambientGain) return;
+      ambientGain = audioCtx.createGain();
+      ambientGain.gain.value = 0;
+      ambientGain.connect(audioCtx.destination);
+      const reverbBuf = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+      for (let c = 0; c < 2; c++) {
+        const d = reverbBuf.getChannelData(c);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2);
+      }
+      const reverb = audioCtx.createConvolver();
+      reverb.buffer = reverbBuf; reverb.connect(ambientGain);
+      const notes = [220, 261.63, 293.66, 329.63, 392, 440, 523.25];
+      function scheduleNote() {
+        if (!soundOn || !audioCtx) return;
+        const freq = notes[Math.floor(Math.random() * notes.length)];
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0, audioCtx.currentTime);
+        g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.4);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 4);
+        o.connect(g); g.connect(reverb);
+        o.start(); o.stop(audioCtx.currentTime + 4);
+        ambientScheduler = setTimeout(scheduleNote, 1800 + Math.random() * 2800);
+      }
+      ambientGain.gain.linearRampToValueAtTime(0.65, audioCtx.currentTime + 2);
+      scheduleNote();
+    }
+
+    function stopAmbientMusic() {
+      clearTimeout(ambientScheduler);
+      if (ambientGain && audioCtx) ambientGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
     }
 
     // ── GAME SOUNDS ──
@@ -438,6 +562,16 @@ export default function Home() {
       setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 5000);
     }
 
+    function showTrivia(text) {
+      if (!toastContainer) return;
+      const t = document.createElement('div');
+      t.className = 'toast trivia-toast';
+      t.innerHTML = `<span class="toast-icon">🧠</span><strong style="color:var(--neon);display:block;margin-bottom:3px">Did you know?</strong>${text}`;
+      toastContainer.appendChild(t);
+      requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 500); }, 7000);
+    }
+
     const sdgFacts = [
       '🎯 SDG 12.5: Substantially reduce waste generation through prevention, reuse and recycling by 2030.',
       '♻️ Fact: Only 1% of all clothing is recycled into new garments globally.',
@@ -503,6 +637,19 @@ export default function Home() {
     }
 
     // ── IMPROVED CANVAS GAME ──
+    const gameTriviaFacts = [
+      'One clothes wash releases up to 700,000 microplastic fibres!',
+      'Only 1% of all clothing worldwide is recycled into new garments.',
+      'Fast fashion causes 10% of global carbon emissions — more than all flights combined!',
+      'Making one cotton t-shirt uses 2,700 litres of water.',
+      'Microplastics have been found in 73% of fish in the open ocean.',
+      'Polyester keeps shedding microfibres for 100+ years in the ocean.',
+      'The average person buys 60% more clothes than 15 years ago.',
+      '11 million tonnes of plastic enter the ocean every single year.',
+      '70% of ocean microplastics come from clothing and textiles.',
+      'The fashion industry uses 79 trillion litres of water annually.',
+    ];
+
     const CLOTHES = ['👕','👗','👖','🧥','👔','🧣','🧤','👒','🩱','🧦'];
     const TRASH_ITEMS = ['🗑️','💀','🐟','🪨'];
     let gScore = 0, gMissed = 0, gTime = 30, gRunning = false, gCombo = 0;
@@ -613,6 +760,11 @@ export default function Home() {
 
         gctx.save();
         gctx.translate(item.x, item.y); gctx.rotate(item.rot);
+        gctx.beginPath(); gctx.arc(0, 0, item.hitR * 0.92, 0, Math.PI * 2);
+        gctx.fillStyle = item.isCloth ? 'rgba(0,229,255,0.13)' : 'rgba(255,80,80,0.13)';
+        gctx.fill();
+        gctx.strokeStyle = item.isCloth ? 'rgba(0,229,255,0.5)' : 'rgba(255,80,80,0.45)';
+        gctx.lineWidth = 1.5; gctx.stroke();
         gctx.shadowColor = item.isCloth ? 'rgba(0,229,255,0.9)' : 'rgba(255,80,80,0.8)';
         gctx.shadowBlur = item.isCloth ? 16 : 12;
         gctx.fillText(item.emoji, 0, 0);
@@ -684,8 +836,12 @@ export default function Home() {
           if (item.isCloth) {
             gCombo++;
             const bonus = Math.max(1, Math.floor(gCombo / 3));
+            const prevScore = gScore;
             gScore += bonus;
             if (scoreEl) scoreEl.textContent = gScore;
+            if (Math.floor(gScore / 5) > Math.floor(prevScore / 5)) {
+              showTrivia(gameTriviaFacts[(Math.floor(gScore / 5) - 1) % gameTriviaFacts.length]);
+            }
             const colors = ['#00e5ff','#7df9ff','#ffffff','#00ff88','#ffd700'];
             addParticles(item.x, item.y, colors[Math.floor(Math.random() * colors.length)], 18);
             if (gCombo > 0 && gCombo % 3 === 0) {
@@ -786,6 +942,7 @@ export default function Home() {
       clearInterval(loadIv);
       clearTimeout(toastTimeout);
       clearInterval(toastIv);
+      clearTimeout(ambientScheduler);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('click', onClickRipple);
       window.removeEventListener('scroll', onScroll);
@@ -794,6 +951,28 @@ export default function Home() {
 
   return (
     <>
+      {/* Intro Video Overlay */}
+      <div id="intro-overlay">
+        <video id="intro-video" src="/reel-10s.mp4" playsInline muted preload="auto" />
+        <div id="intro-logo">
+          <img src="/logo.png" alt="PikaThrift"/>
+          <span>PikaThrift</span>
+        </div>
+        <div id="intro-controls">
+          <button id="intro-unmute">🔇 Unmute</button>
+          <button id="intro-skip">Skip →</button>
+        </div>
+        <div id="intro-bar"></div>
+      </div>
+
+      {/* Video Modal (30s reel) */}
+      <div id="video-modal">
+        <div id="video-modal-inner">
+          <video id="modal-video" src="/reel-30s.mp4" controls playsInline preload="none" />
+          <button id="modal-close">✕</button>
+        </div>
+      </div>
+
       {/* Loading Screen */}
       <div id="loader">
         <div className="loader-pct" id="loader-pct">0%</div>
@@ -844,6 +1023,7 @@ export default function Home() {
           <div className="badge">🌊 Student-Run Non-Profit Beach Cleanup</div>
           <br/>
           <a href="#mission" className="hero-btn">Dive In ↓</a>
+          <button className="reel-btn" id="watch-reel-btn">🎬 Watch Our Reel</button>
         </div>
       </div>
 
